@@ -33,8 +33,6 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 SUBTITULO = "Plataforma de Gerenciamento de Incidentes de Seguranca Cibernetica"
 
 DESCRICAO = f"""
-**{SUBTITULO}**
-
 API REST academica que simula uma central de operacoes de seguranca (SOC): permite
 **registrar, consultar, classificar, acompanhar e gerenciar incidentes** de seguranca.
 
@@ -127,7 +125,7 @@ def swagger_personalizado():
         swagger_css_url="/static/swagger/swagger-ui.css",
         swagger_favicon_url="/static/favicon.svg",
         swagger_ui_parameters={"docExpansion": "list", "defaultModelsExpandDepth": -1, "displayRequestDuration": True,
-                               "tagsSorter": "alpha", "persistAuthorization": False},
+                               "persistAuthorization": False},
     )
     html = pagina.body.decode("utf-8").replace(
         "</head>", '<link rel="stylesheet" type="text/css" href="/static/swagger-tema.css">'
