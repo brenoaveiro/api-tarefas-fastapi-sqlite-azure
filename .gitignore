@@ -1,0 +1,42 @@
+# Ambientes virtuais Python
+.venv/
+venv/
+env/
+
+# Cache e bytecode Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Variaveis de ambiente e segredos
+.env
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+
+# Banco de dados (dados reais nunca devem ir para o repositorio)
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Arquivos temporarios do sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Backups de banco de dados
+backups/
