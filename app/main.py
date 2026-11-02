@@ -30,28 +30,28 @@ logger = logging.getLogger("cyberincident")
 logging.basicConfig(level=logging.INFO)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
-SUBTITULO = "Plataforma de Gerenciamento de Incidentes de Seguranca Cibernetica"
+SUBTITULO = "Plataforma de Gerenciamento de Incidentes de Segurança Cibernética"
 
 DESCRICAO = f"""
-API REST academica que simula uma central de operacoes de seguranca (SOC): permite
-**registrar, consultar, classificar, acompanhar e gerenciar incidentes** de seguranca.
+API REST acadêmica que simula uma central de operações de segurança (SOC): permite
+**registrar, consultar, classificar, acompanhar e gerenciar incidentes** de segurança.
 
-* Persistencia em **SQLite** (tabela `incidentes`), hospedada em uma VM **Microsoft Azure**.
+* Persistência em **SQLite** (tabela `incidentes`), hospedada em uma VM **Microsoft Azure**.
 * Severidade: `baixa`, `media`, `alta`, `critica`. Status: `aberto`, `em_analise`, `contido`, `resolvido`.
-* Operacoes de **escrita** (POST, PUT, PATCH, DELETE) sao restritas por IP no Nginx; leituras (GET) sao publicas.
-* **Todos os dados sao ficticios.** IPs de exemplo usam faixas reservadas para documentacao (RFC 5737).
-* A conexao e **HTTP** (sem HTTPS): nao ha dominio proprio para emitir certificado.
+* Operações de **escrita** (POST, PUT, PATCH, DELETE) são restritas por IP no Nginx; leituras (GET) são públicas.
+* **Todos os dados são fictícios.** IPs de exemplo usam faixas reservadas para documentação (RFC 5737).
+* A conexão é **HTTP** (sem HTTPS): não há domínio próprio para emitir certificado.
 """
 
 TAGS = [
-    {"name": "Sistema", "description": "Disponibilidade da API e conexao com o SQLite."},
-    {"name": "Incidentes", "description": "Cadastro, consulta, atualizacao e exclusao de incidentes de seguranca."},
-    {"name": "Estatisticas", "description": "Indicadores calculados a partir dos registros reais do SQLite."},
+    {"name": "Sistema", "description": "Disponibilidade da API e conexão com o SQLite."},
+    {"name": "Incidentes", "description": "Cadastro, consulta, atualização e exclusão de incidentes de segurança."},
+    {"name": "Estatísticas", "description": "Indicadores calculados a partir dos registros reais do SQLite."},
 ]
 
 
 def _criar_dados_demo_se_vazio() -> None:
-    """Insere incidentes FICTICIOS de exemplo, apenas se SEED_DEMO_DATA estiver ativo e o banco vazio."""
+    """Insere incidentes FICTÍCIOS de exemplo, apenas se SEED_DEMO_DATA estiver ativo e o banco vazio."""
     if not settings.SEED_DEMO_DATA:
         return
     db = SessionLocal()
@@ -61,7 +61,7 @@ def _criar_dados_demo_se_vazio() -> None:
                 ("[DEMO] Tentativas de login em excesso", "forca_bruta", "alta", "203.0.113.10", "srv-web-01"),
                 ("[DEMO] E-mail suspeito de phishing", "phishing", "media", None, "caixa-financeiro"),
             ]:
-                crud.criar(db, IncidenteCreate(titulo=t, descricao="Registro ficticio para demonstracao academica.",
+                crud.criar(db, IncidenteCreate(titulo=t, descricao="Registro fictício para demonstração acadêmica.",
                                                categoria=c, severidade=s, ip_origem=ip, ativo_afetado=a))
     finally:
         db.close()
@@ -135,7 +135,7 @@ def swagger_personalizado():
 
 # ------------------------------------------------------------------- sistema
 
-@app.get("/health", response_model=HealthOut, tags=["Sistema"], summary="Verifica a saude da API e do banco")
+@app.get("/health", response_model=HealthOut, tags=["Sistema"], summary="Verifica a saúde da API e do banco")
 def health_check(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
@@ -153,8 +153,8 @@ def health_check(db: Session = Depends(get_db)):
 @app.get("/incidentes", response_model=IncidenteListOut, tags=["Incidentes"],
          summary="Lista incidentes (paginado, com filtros)")
 def listar_incidentes(
-    skip: int = Query(0, ge=0, description="Registros a ignorar (paginacao)."),
-    limit: int = Query(20, ge=1, le=settings.MAX_PAGE_SIZE, description="Maximo de registros retornados."),
+    skip: int = Query(0, ge=0, description="Registros a ignorar (paginação)."),
+    limit: int = Query(20, ge=1, le=settings.MAX_PAGE_SIZE, description="Máximo de registros retornados."),
     severidade: Optional[Severidade] = Query(None, description="Filtra por severidade."),
     status_: Optional[StatusIncidente] = Query(None, alias="status", description="Filtra por status."),
     categoria: Optional[Categoria] = Query(None, description="Filtra por categoria."),
@@ -166,18 +166,18 @@ def listar_incidentes(
 
 
 # IMPORTANTE: /estatisticas deve vir ANTES de /{incidente_id} para nao ser tratada como um ID.
-@app.get("/incidentes/estatisticas", response_model=EstatisticasOut, tags=["Estatisticas"],
-         summary="Estatisticas dos incidentes (calculadas no SQLite)")
+@app.get("/incidentes/estatisticas", response_model=EstatisticasOut, tags=["Estatísticas"],
+         summary="Estatísticas dos incidentes (calculadas no SQLite)")
 def estatisticas(db: Session = Depends(get_db)):
     return crud.estatisticas(db)
 
 
 @app.get("/incidentes/{incidente_id}", response_model=IncidenteOut, tags=["Incidentes"],
-         summary="Consulta um incidente", responses={404: {"model": ErroOut, "description": "Incidente nao encontrado"}})
+         summary="Consulta um incidente", responses={404: {"model": ErroOut, "description": "Incidente não encontrado"}})
 def obter_incidente(incidente_id: int, db: Session = Depends(get_db)):
     inc = crud.obter(db, incidente_id)
     if inc is None:
-        raise HTTPException(status_code=404, detail="Incidente nao encontrado.")
+        raise HTTPException(status_code=404, detail="Incidente não encontrado.")
     return inc
 
 
@@ -189,11 +189,11 @@ def criar_incidente(dados: IncidenteCreate, db: Session = Depends(get_db)):
 
 @app.put("/incidentes/{incidente_id}", response_model=IncidenteOut, tags=["Incidentes"],
          summary="Atualiza um incidente (todos os campos)",
-         responses={404: {"model": ErroOut, "description": "Incidente nao encontrado"}})
+         responses={404: {"model": ErroOut, "description": "Incidente não encontrado"}})
 def atualizar_incidente(incidente_id: int, dados: IncidenteUpdate, db: Session = Depends(get_db)):
     inc = crud.obter(db, incidente_id)
     if inc is None:
-        raise HTTPException(status_code=404, detail="Incidente nao encontrado.")
+        raise HTTPException(status_code=404, detail="Incidente não encontrado.")
     try:
         return crud.atualizar(db, inc, dados)
     except crud.TransicaoInvalida as exc:
@@ -202,11 +202,11 @@ def atualizar_incidente(incidente_id: int, dados: IncidenteUpdate, db: Session =
 
 @app.patch("/incidentes/{incidente_id}/status", response_model=IncidenteOut, tags=["Incidentes"],
            summary="Altera somente o status (respeita o fluxo de tratamento)",
-           responses={404: {"model": ErroOut, "description": "Incidente nao encontrado"}})
+           responses={404: {"model": ErroOut, "description": "Incidente não encontrado"}})
 def alterar_status(incidente_id: int, dados: StatusUpdate, db: Session = Depends(get_db)):
     inc = crud.obter(db, incidente_id)
     if inc is None:
-        raise HTTPException(status_code=404, detail="Incidente nao encontrado.")
+        raise HTTPException(status_code=404, detail="Incidente não encontrado.")
     try:
         return crud.alterar_status(db, inc, dados.status)
     except crud.TransicaoInvalida as exc:
@@ -214,10 +214,10 @@ def alterar_status(incidente_id: int, dados: StatusUpdate, db: Session = Depends
 
 
 @app.delete("/incidentes/{incidente_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Incidentes"],
-            summary="Exclui um incidente (de demonstracao)",
-            responses={404: {"model": ErroOut, "description": "Incidente nao encontrado"}})
+            summary="Exclui um incidente (de demonstração)",
+            responses={404: {"model": ErroOut, "description": "Incidente não encontrado"}})
 def excluir_incidente(incidente_id: int, db: Session = Depends(get_db)):
     inc = crud.obter(db, incidente_id)
     if inc is None:
-        raise HTTPException(status_code=404, detail="Incidente nao encontrado.")
+        raise HTTPException(status_code=404, detail="Incidente não encontrado.")
     crud.excluir(db, inc)

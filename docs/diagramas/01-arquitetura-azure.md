@@ -1,45 +1,33 @@
-# Diagrama 1 — Arquitetura Azure
-
-Representa a fronteira entre os recursos Azure (nuvem) e os componentes
-internos da VM (sistema operacional). O NSG atua como controle de
-trafego de rede (firewall), nunca como servidor de aplicacao.
+# Diagrama 1 — Arquitetura Azure da CyberIncident API
 
 ```mermaid
 flowchart TB
-    Usuario["Usuario / Navegador / Cliente HTTP"]
+    Usuario["Navegador / Cliente HTTP"]
 
-    subgraph Internet[" Internet "]
-        Usuario
-    end
-
-    subgraph Azure["Microsoft Azure — Resource Group"]
-        PublicIP["Public IP Address"]
-        NSG["Network Security Group\n(controle de trafego: 22 so do admin, 80 publica)"]
-        VNet["Virtual Network / Subnet"]
-
-        subgraph VM["Azure Virtual Machine — Ubuntu Server LTS (Standard_B2ats_v2, North Central US)"]
-            Nginx["Nginx\n(proxy reverso — porta 80)"]
-            Uvicorn["Uvicorn + FastAPI\n(127.0.0.1:8000 — nao exposto)"]
-            SQLite["SQLite\n/var/lib/api-tarefas/tarefas.db\n(Managed Disk)"]
-
-            Nginx -->|proxy_pass| Uvicorn
-            Uvicorn -->|leitura/escrita| SQLite
+    subgraph Azure["Microsoft Azure — Resource Group GS_Cloud_API (North Central US)"]
+        PIP["IP publico GS_Cloud_API_IP\nStandard, estatico"]
+        NSG["NSG GS_Cloud_API_NSG\n22: so IP do administrador | 80: publica"]
+        VN["Rede virtual GS_Cloud_API_VNet 10.10.0.0/16
+Sub-rede GS_Cloud_API_Subnet 10.10.1.0/24"]
+        subgraph VM["VM GS-Cloud-API-VM — Ubuntu 24.04 — Standard_B2ats_v2 (2 vCPU, 1 GiB)"]
+            Nginx["Nginx :80
+proxy reverso + bloqueio de escrita por IP"]
+            App["Uvicorn + FastAPI
+127.0.0.1:8000 (nao exposto)"]
+            DB[("SQLite
+/var/lib/api-tarefas/tarefas.db
+tabela incidentes")]
         end
-
-        PublicIP --- NSG
-        NSG --- VNet
-        VNet --- VM
+        Disco["Managed Disk GS_Cloud_API_Disk\nStandard SSD LRS, 32 GiB"]
     end
 
-    Usuario -->|HTTP porta 80| PublicIP
-
-    classDef azureBox fill:#e6f2ff,stroke:#0066cc;
-    classDef vmBox fill:#fff7e6,stroke:#cc8400;
-    class Azure azureBox
-    class VM vmBox
+    Usuario -->|HTTP porta 80| PIP --> NSG --> VN --> Nginx
+    Nginx -->|proxy_pass| App
+    App -->|SQLAlchemy| DB
+    DB -.->|armazenado em| Disco
 ```
 
-**Observacoes:**
-- O NSG controla quais portas podem receber trafego da internet (22 restrita ao IP do administrador; 80 liberada; 443 nao usada, pois nao ha dominio/HTTPS; 8000 nunca exposta publicamente).
-- O Managed Disk armazena o arquivo SQLite de forma persistente — ele nao e perdido ao reiniciar a VM, diferente do disco temporario local.
-- O Uvicorn escuta somente em `127.0.0.1`, portanto so pode ser acessado pelo Nginx na mesma maquina.
+- O **NSG** funciona como firewall: SSH somente do IP do administrador e HTTP na porta 80; a porta 8000 nunca e liberada.
+- O **Nginx** libera leitura (GET) para todos e restringe POST/PUT/PATCH/DELETE a IPs autorizados.
+- O arquivo SQLite fica no **Managed Disk**, que persiste mesmo se a VM for reiniciada.
+- Nao ha HTTPS: nao existe dominio proprio para emitir certificado.

@@ -1,28 +1,33 @@
-# Diagrama 2 — Fluxo de uma Requisicao HTTP
+# Diagrama 2 — Fluxo HTTP: navegador, Nginx, FastAPI e SQLite
 
 ```mermaid
 sequenceDiagram
-    participant C as Cliente
-    participant N as Nginx (proxy reverso)
-    participant F as FastAPI (Uvicorn)
-    participant P as Validacao Pydantic
-    participant D as Camada de persistencia (crud.py)
+    participant N as Navegador
+    participant X as Nginx (porta 80)
+    participant F as FastAPI (127.0.0.1:8000)
     participant S as SQLite
 
-    C->>N: POST /tarefas (JSON)
-    N->>F: proxy_pass para 127.0.0.1:8000
-    F->>P: Valida corpo da requisicao (TarefaCreate)
-    alt Dados invalidos
-        P-->>F: Erro de validacao
-        F-->>N: HTTP 422 (detalhe do erro)
-        N-->>C: HTTP 422
-    else Dados validos
-        P-->>F: Objeto validado
-        F->>D: criar_tarefa(db, dados)
-        D->>S: INSERT INTO tarefas (...)
-        S-->>D: Registro criado (id, timestamps)
-        D-->>F: Tarefa (ORM)
-        F-->>N: HTTP 201 + JSON da tarefa
-        N-->>C: HTTP 201
+    N->>X: GET / (dashboard)
+    X->>F: proxy_pass
+    F-->>N: HTML, CSS e JS estaticos
+    N->>X: GET /incidentes/estatisticas
+    X->>F: proxy_pass
+    F->>S: SELECT ... GROUP BY
+    S-->>F: contagens reais
+    F-->>N: JSON (200)
+
+    N->>X: POST /incidentes
+    alt IP nao autorizado
+        X-->>N: 403 Forbidden
+    else IP autorizado
+        X->>F: proxy_pass
+        F->>F: valida dados (Pydantic)
+        alt dados invalidos
+            F-->>N: 422
+        else dados validos
+            F->>S: INSERT INTO incidentes
+            S-->>F: registro criado
+            F-->>N: 201 + JSON
+        end
     end
 ```

@@ -11,7 +11,7 @@
     svg.appendChild(cria("path", { d: "M22 32l8 8 14-16", "class": "check" }));
     var t = document.createElement("div");
     var b = document.createElement("b"); b.textContent = "CyberIncident API";
-    var s = document.createElement("span"); s.textContent = "SOC Incident Management · Documentacao interativa (Swagger)";
+    var s = document.createElement("span"); s.textContent = "SOC Incident Management · Documentação interativa (Swagger)";
     t.appendChild(b); t.appendChild(s);
     var nav = document.createElement("nav");
     [["Dashboard", "/"], ["OpenAPI JSON", "/openapi.json"]].forEach(function (l) {

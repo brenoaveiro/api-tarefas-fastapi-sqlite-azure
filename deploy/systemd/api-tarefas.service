@@ -12,7 +12,7 @@
 # aplicacao externamente nas portas 80/443.
 
 [Unit]
-Description=CyberIncident API - Gerenciamento de Incidentes de Seguranca (FastAPI + Uvicorn)
+Description=CyberIncident API - Gerenciamento de Incidentes de Segurança (FastAPI + Uvicorn)
 After=network.target
 
 [Service]

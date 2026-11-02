@@ -2,7 +2,9 @@
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var SEVS = ["critica", "alta", "media", "baixa"];
-  var ROT = { critica: "Critica", alta: "Alta", media: "Media", baixa: "Baixa" };
+  var ROT = { critica: "Crítica", alta: "Alta", media: "Média", baixa: "Baixa" };
+  var NOMES = { em_analise: "em análise", forca_bruta: "força bruta", acesso_indevido: "acesso indevido",
+                vazamento_dados: "vazamento de dados", anomalia_rede: "anomalia de rede" };
 
   // Sempre textContent: dados vindos do banco nunca sao interpretados como HTML (protecao contra XSS).
   function el(tag, cls, txt) {
@@ -18,7 +20,7 @@
     });
   }
   function fmt(iso) { return iso ? iso.replace("T", " ").slice(0, 16) : "-"; }
-  function rotulo(s) { return String(s).replace(/_/g, " "); }
+  function rotulo(s) { return NOMES[s] || String(s).replace(/_/g, " "); }
 
   function saude() {
     return get("/health").then(function (h) {
@@ -27,7 +29,7 @@
       $("saude-txt").textContent = ok ? "API online · banco " + h.database + " · v" + h.version : "API degradada";
     }).catch(function () {
       $("saude").className = "saude off";
-      $("saude-txt").textContent = "API indisponivel";
+      $("saude-txt").textContent = "API indisponível";
     });
   }
 
@@ -70,7 +72,7 @@
 
   function erro() {
     var tb = $("tabela"); tb.textContent = "";
-    var tr = el("tr"), td = el("td", "vazio", "Nao foi possivel carregar os dados.");
+    var tr = el("tr"), td = el("td", "vazio", "Não foi possível carregar os dados.");
     td.colSpan = 6; tr.appendChild(td); tb.appendChild(tr);
   }
 

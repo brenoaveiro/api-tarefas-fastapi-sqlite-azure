@@ -68,7 +68,7 @@ def test_obter_por_id_e_404(client):
     inc = criar(client)
     assert client.get(f"/incidentes/{inc['id']}").json()["titulo"] == inc["titulo"]
     r = client.get("/incidentes/99999")
-    assert r.status_code == 404 and r.json()["detail"] == "Incidente nao encontrado."
+    assert r.status_code == 404 and r.json()["detail"] == "Incidente não encontrado."
 
 
 def test_listagem_paginada_e_filtros(client):
@@ -117,7 +117,7 @@ def test_alterar_status_e_datas_de_resolucao(client):
 def test_transicao_invalida_e_404_no_patch(client):
     inc = criar(client)
     r = client.patch(f"/incidentes/{inc['id']}/status", json={"status": "resolvido"})
-    assert r.status_code == 422 and "invalida" in r.json()["detail"]
+    assert r.status_code == 422 and "inválida" in r.json()["detail"]
     assert client.patch("/incidentes/99999/status", json={"status": "em_analise"}).status_code == 404
 
 
@@ -235,7 +235,7 @@ def test_openapi(client):
     for p in ("/health", "/incidentes", "/incidentes/estatisticas", "/incidentes/{incidente_id}",
               "/incidentes/{incidente_id}/status"):
         assert p in j["paths"]
-    assert {t["name"] for t in j["tags"]} == {"Sistema", "Incidentes", "Estatisticas"}
+    assert {t["name"] for t in j["tags"]} == {"Sistema", "Incidentes", "Estatísticas"}
     assert "/tarefas" not in j["paths"]
 
 

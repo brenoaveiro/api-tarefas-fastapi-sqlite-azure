@@ -11,7 +11,7 @@ from app.schemas import IncidenteCreate, IncidenteUpdate
 
 
 class TransicaoInvalida(ValueError):
-    """Mudanca de status nao permitida pelo fluxo de tratamento."""
+    """Mudança de status não permitida pelo fluxo de tratamento."""
 
 
 def listar(db: Session, skip: int, limit: int, severidade: Optional[str] = None,
@@ -51,7 +51,7 @@ def _aplicar_status(inc: Incidente, novo: str) -> None:
         return
     if alvo not in TRANSICOES[atual]:
         permitidos = ", ".join(sorted(s.value for s in TRANSICOES[atual]))
-        raise TransicaoInvalida(f"Transicao de status invalida: {atual.value} -> {alvo.value}. Permitidas: {permitidos}.")
+        raise TransicaoInvalida(f"Transição de status inválida: {atual.value} -> {alvo.value}. Permitidas: {permitidos}.")
     inc.status = alvo.value
     inc.resolvido_em = agora_utc() if alvo == StatusIncidente.resolvido else None
 

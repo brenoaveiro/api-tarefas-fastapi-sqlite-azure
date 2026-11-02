@@ -32,13 +32,13 @@ class _Base(BaseModel):
         try:
             return str(ipaddress.ip_address(v))
         except ValueError as exc:
-            raise ValueError("ip_origem invalido: informe um IPv4 ou IPv6 valido") from exc
+            raise ValueError("ip_origem inválido: informe um IPv4 ou IPv6 válido") from exc
 
 
 class IncidenteCreate(_Base):
     titulo: str = Field(min_length=3, max_length=200, examples=["[DEMO] Tentativas de login repetidas no servidor web"])
     descricao: str = Field(min_length=5, max_length=2000,
-                           examples=["Registro ficticio: 50 tentativas de autenticacao falhas em 2 minutos."])
+                           examples=["Registro fictício: 50 tentativas de autenticação falhas em 2 minutos."])
     categoria: Categoria = Field(examples=["forca_bruta"])
     severidade: Severidade = Field(examples=["alta"])
     ip_origem: Optional[str] = Field(default=None, examples=["203.0.113.25"])

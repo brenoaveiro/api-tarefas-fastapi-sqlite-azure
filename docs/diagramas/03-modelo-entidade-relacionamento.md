@@ -1,27 +1,22 @@
-# Diagrama 3 — Modelo Entidade-Relacionamento
-
-O projeto possui uma unica tabela, `tarefas`, sem relacionamentos com
-outras tabelas (escopo academico pequeno e intencional).
+# Diagrama 3 — Modelo de dados SQLite: tabela `incidentes`
 
 ```mermaid
 erDiagram
-    TAREFAS {
-        INTEGER id PK "autoincrement"
-        VARCHAR_200 titulo "NOT NULL"
-        VARCHAR_2000 descricao "NULL permitido"
-        BOOLEAN concluida "NOT NULL, default FALSE"
-        DATETIME criada_em "NOT NULL, UTC"
-        DATETIME atualizada_em "NOT NULL, UTC"
+    INCIDENTES {
+        INTEGER id PK
+        VARCHAR titulo
+        TEXT descricao
+        VARCHAR categoria "phishing, malware, acesso_indevido, forca_bruta, vazamento_dados, anomalia_rede, outros"
+        VARCHAR severidade "baixa, media, alta, critica"
+        VARCHAR status "aberto, em_analise, contido, resolvido"
+        VARCHAR ip_origem "opcional, IPv4 ou IPv6"
+        VARCHAR ativo_afetado
+        VARCHAR responsavel "opcional"
+        DATETIME criado_em "UTC"
+        DATETIME atualizado_em "UTC"
+        DATETIME resolvido_em "preenchido ao resolver"
     }
 ```
 
-**Restricoes e tipos:**
-
-| Campo | Tipo SQL | Restricoes |
-|---|---|---|
-| id | INTEGER | Chave primaria, gerado automaticamente |
-| titulo | VARCHAR(200) | Obrigatorio, 1 a 200 caracteres |
-| descricao | VARCHAR(2000) | Opcional |
-| concluida | BOOLEAN | Obrigatorio, padrao `false` |
-| criada_em | DATETIME (UTC) | Obrigatorio, preenchido na criacao |
-| atualizada_em | DATETIME (UTC) | Obrigatorio, atualizado em cada PUT |
+- Restricoes `CHECK` no banco garantem os valores validos de categoria, severidade e status.
+- A tabela antiga `tarefas` (versao anterior do projeto) continua no mesmo arquivo, sem relacao com `incidentes` e sem alteracao.
