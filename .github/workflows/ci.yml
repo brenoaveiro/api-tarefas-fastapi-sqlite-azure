@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+      - name: Verificar estrutura e assets necessarios
+        run: |
+          for f in .gitignore .env.example pytest.ini requirements.txt \
+                   app/main.py app/static/index.html app/static/dashboard.js app/static/dashboard.css \
+                   app/static/swagger/swagger-ui-bundle.js app/static/swagger/swagger-ui.css \
+                   app/static/swagger/LICENSE-swagger-ui.txt deploy/install.sh deploy/deploy.sh \
+                   scripts/testar_producao.sh docs/relatorio-final.docx docs/relatorio-final.pdf; do
+            test -s "$f" || { echo "ARQUIVO AUSENTE OU VAZIO: $f"; exit 1; }
+          done
+          bash -n deploy/install.sh && bash -n deploy/deploy.sh && bash -n deploy/backup.sh \
+            && bash -n deploy/https_ip.sh && bash -n scripts/testar_producao.sh
+      - name: Pytest
+        run: python -m pytest -q

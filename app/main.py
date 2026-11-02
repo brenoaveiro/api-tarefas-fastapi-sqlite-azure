@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.INFO)
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 SUBTITULO = "Plataforma de Gerenciamento de Incidentes de Segurança Cibernética"
 
-DESCRICAO = f"""
+DESCRICAO = """
 API REST acadêmica que simula uma central de operações de segurança (SOC): permite
 **registrar, consultar, classificar, acompanhar e gerenciar incidentes** de segurança.
 
@@ -40,7 +40,7 @@ API REST acadêmica que simula uma central de operações de segurança (SOC): p
 * Severidade: `baixa`, `media`, `alta`, `critica`. Status: `aberto`, `em_analise`, `contido`, `resolvido`.
 * Operações de **escrita** (POST, PUT, PATCH, DELETE) são restritas por IP no Nginx; leituras (GET) são públicas.
 * **Todos os dados são fictícios.** IPs de exemplo usam faixas reservadas para documentação (RFC 5737).
-* A conexão é **HTTP** (sem HTTPS): não há domínio próprio para emitir certificado.
+* Disponível em **HTTPS** (certificado Let's Encrypt emitido para o IP público, de curta duração e renovado automaticamente) e também em HTTP.
 """
 
 TAGS = [
