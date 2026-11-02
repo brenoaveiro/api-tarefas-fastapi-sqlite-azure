@@ -24,10 +24,10 @@ manualmente, diferente de um App Service (PaaS), onde a plataforma
 gerencia o runtime.
 
 **5. Justificativa da VM e da SKU (30s)**
-`Standard_B1s`: 1 vCPU, 1 GiB RAM, burstable — suficiente para uma API
-pequena com poucos acessos simultaneos, de baixo custo (~US$ 7,59/mes
-de compute, ou dentro da cota gratuita de 750h/mes por 12 meses em
-conta Azure Free).
+`Standard_B2ats_v2`: 2 vCPU, 1 GiB RAM, burstable — suficiente para uma API
+pequena com poucos acessos simultaneos, de baixo custo (~US$ 6,86/mes
+de compute; ~US$ 13/mes no total). A B1s nao esta liberada na assinatura
+Azure for Students (ver docs/DEPLOY_AZURE_REAL.md).
 
 **6. Armazenamento SQLite (1 min)**
 Arquivo unico em disco persistente (`/var/lib/api-tarefas/tarefas.db`),
@@ -85,10 +85,10 @@ muitos acessos simultaneos de escrita.
 E o "tamanho" (configuracao de hardware) de uma VM na Azure — define
 quantidade de vCPUs, memoria RAM, e capacidade de disco/rede.
 
-**Por que escolheu a B1s?**
-E a menor SKU "burstable" da Azure, com o menor custo, e esta dentro da
-cota gratuita de 750h/mes por 12 meses em uma conta Azure Free —
-adequada para uma API de baixo trafego.
+**Por que escolheu a B2ats_v2 e nao a B1s?**
+A B1s nao esta disponivel na assinatura Azure for Students, e a politica
+so permite algumas regioes. A B2ats_v2 (northcentralus) foi a SKU
+permitida, com cota, de menor custo — adequada para uma API de baixo trafego.
 
 **Qual a diferenca entre VM e App Service?**
 A VM (IaaS) exige que voce instale e gerencie o sistema operacional,

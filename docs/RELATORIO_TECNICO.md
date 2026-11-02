@@ -17,7 +17,7 @@
 5. Desenvolvimento da API
 6. Banco de dados
 7. Infraestrutura Azure
-8. Implantacao
+8. Implantacao (inclui 8-A: implantacao realizada)
 9. Testes e validacoes
 10. Evidencias
 11. Custos
@@ -265,8 +265,8 @@ corretude funcional do CRUD demonstrado.
 - **Disco persistente (Managed Disk):** disco virtual anexado à VM,
   que mantem seus dados entre reinicializacoes e e o local correto
   para o arquivo SQLite.
-- **Disco temporario:** disco local de curta duracao (ex.: 4 GiB na
-  SKU `Standard_B1s`), usado para arquivos de swap/cache do sistema;
+- **Disco temporario:** disco local de curta duracao (ex.: 8 GiB na
+  SKU `Standard_B2ats_v2`), usado para arquivos de swap/cache do sistema;
   **pode ser perdido** em operacoes de manutencao da plataforma —
   nunca deve armazenar dados de aplicacao.
 - **Armazenamento gerenciado Azure (Blob Storage, Azure SQL
@@ -315,18 +315,19 @@ vCPUs, memoria RAM, capacidade de disco temporario e rede oferecida.
 
 ### Caracteristicas e justificativa da SKU utilizada
 
-`Standard_B1s`: 1 vCPU, 1 GiB de RAM, disco temporario de 4 GiB, do
-tipo "burstable" (acumula creditos de CPU para absorver picos breves de
-uso). E a menor SKU burstable da familia B, adequada para uma API de
-baixo trafego como a deste projeto, e esta incluida na cota gratuita de
-750 horas/mes por 12 meses de uma conta Azure Free (ver Capitulo 11).
+`Standard_B2ats_v2`: 2 vCPU (AMD), 1 GiB de RAM, do tipo "burstable"
+(acumula creditos de CPU para absorver picos breves de uso). A SKU
+inicialmente planejada, `Standard_B1s`, **nao esta disponivel** na
+assinatura Azure for Students (restricao de SKU e politica de regioes
+permitidas); a B2ats_v2 foi a de menor custo permitida, com cota, na
+regiao North Central US. Detalhes em `docs/DEPLOY_AZURE_REAL.md`.
 
 ### vCPU e memoria RAM
 
 **vCPU** (virtual CPU) e uma unidade de processamento virtualizada,
 alocada a VM a partir do hardware fisico do datacenter. **Memoria RAM**
 e a memoria volatil disponivel para a execucao de processos — na
-`Standard_B1s`, apenas 1 GiB, suficiente para rodar o Uvicorn, o Nginx
+`Standard_B2ats_v2`, apenas 1 GiB (mitigado com 1 GiB de swap), suficiente para rodar o Uvicorn, o Nginx
 e o SQLite nesta escala de projeto, mas um limite a se observar caso o
 trafego aumente.
 
@@ -422,7 +423,7 @@ passos efetivamente executados neste trabalho.
 ### Passos planejados para a VM Azure (dependem de acao manual, ver `GUIA_AZURE.md`)
 
 1. Provisionamento do Resource Group, Virtual Network, NSG, Public IP
-   e Virtual Machine (`Standard_B1s`, Ubuntu Server LTS) no portal
+   e Virtual Machine (`Standard_B2ats_v2`, Ubuntu Server LTS) no portal
    Azure.
 2. Conexao via SSH.
 3. Execucao do script `deploy/install.sh`, que automatiza: atualizacao
@@ -439,6 +440,68 @@ passos efetivamente executados neste trabalho.
 **planejados e automatizados via script**, mas **pendentes de execucao
 real**, que depende da autorizacao de custo e da acao manual do aluno
 no portal Azure (ver Capitulo 13 e secao "I" da resposta final).
+
+## Capitulo 8-A — Implantacao realizada (dados reais)
+
+Esta secao registra o que **de fato** foi criado e testado em 2026-11-02.
+O detalhamento completo esta em `docs/DEPLOY_AZURE_REAL.md`.
+
+### Ajuste de plano: SKU e regiao
+
+O plano inicial previa `Standard_B1s`. Ao consultar a assinatura Azure for
+Students, verificou-se que a B1s nao esta disponivel e que uma politica de
+"regioes permitidas" limita a criacao de recursos a `southafricanorth`,
+`northcentralus`, `brazilsouth`, `eastus2` e `mexicocentral`. As VMs
+liberadas em Brazil South tinham cota zero. A opcao de menor custo com
+cota foi a `Standard_B2ats_v2` em `northcentralus`.
+
+### Recursos criados e por que cada um existe
+
+| Recurso | Valor real | Por que foi escolhido / como funciona |
+|---|---|---|
+| Resource Group `rg-api-tarefas` | North Central US | Agrupa todos os recursos; apagar o grupo remove tudo de uma vez e encerra a cobranca. |
+| Virtual Network `vnet-api-tarefas` + sub-rede `snet-api` | 10.10.0.0/16 e 10.10.1.0/24 | Rede privada isolada onde a VM recebe o IP 10.10.1.4. |
+| Network Security Group `nsg-api-tarefas` | SSH (22) so do IP do administrador; HTTP (80) publico; demais portas negadas | Firewall da Azure na frente da VM; a porta 8000 do Uvicorn nao e exposta. |
+| IP publico `pip-api-tarefas` | Standard, estatico, 52.159.86.165 | Endereco fixo para acessar a API pela internet; SKU Standard e fechado por padrao e exige NSG. |
+| VM `vm-api-tarefas` | Standard_B2ats_v2, 2 vCPU, 1 GiB RAM, Ubuntu 24.04.5 LTS | Menor VM permitida; "burstable" acumula creditos de CPU para picos. Swap de 1 GiB compensa a pouca RAM. |
+| Managed Disk `osdisk-api-tarefas` | Standard SSD LRS, 32 GiB | Disco persistente: o SQLite sobrevive a reinicios da VM. LRS mantem 3 copias no mesmo datacenter. |
+| Autenticacao SSH | Chave ed25519, sem senha | Resiste a ataques de forca bruta por senha; a chave privada nunca sai do computador do administrador. |
+
+### Camada de software na VM
+
+O `install.sh` instalou Python 3, o ambiente virtual, as dependencias, o
+Nginx e o servico systemd. O fluxo de uma requisicao e: internet -> IP
+publico -> NSG (porta 80) -> Nginx -> Uvicorn/FastAPI (127.0.0.1:8000) ->
+SQLite (`/var/lib/api-tarefas/tarefas.db`, modo WAL, permissao 600).
+O systemd reinicia a API automaticamente se ela falhar.
+
+### Protecao de escrita e HTTPS
+
+A API nao tem autenticacao. Por isso o Nginx libera publicamente apenas
+leitura (GET/HEAD/OPTIONS); POST/PUT/PATCH/DELETE exigem IP autorizado
+(retornam 403 para os demais). Nao ha HTTPS, pois nao ha dominio proprio
+(nao existe certificado valido para um IP); a conexao e HTTP e **nao e
+segura**. Devem ser usados apenas dados ficticios.
+
+### Resultados dos testes na URL publica
+
+Script `scripts/testar_producao.sh` (saida em
+`docs/evidencias/testes-producao.txt`): **17 aprovados, 0 falhas**.
+
+| Verificacao | Resultado |
+|---|---|
+| GET /health | 200 |
+| GET /docs (Swagger) e /openapi.json | 200 |
+| POST /tarefas | 201 |
+| GET /tarefas e GET /tarefas/{id} | 200 |
+| PUT /tarefas/{id} | 200 |
+| POST com titulo vazio | 422 |
+| GET id inexistente | 404 |
+| Reinicio do servico + nova consulta | registro preservado (persistencia) |
+| DELETE /tarefas/{id} e nova consulta | 204 e 404 |
+| Porta 8000 pela internet | sem resposta (bloqueada) |
+| SQLite | journal_mode=wal, integrity_check=ok |
+| Escrita de IP nao autorizado | 403 |
 
 ## Capitulo 9 — Testes e validacoes
 
@@ -521,16 +584,15 @@ evidencias deste relatorio:
 
 | Recurso | Pode gerar custo? | Observacao |
 |---|---|---|
-| Virtual Machine `Standard_B1s` | Sim (compute) | ~US$ 0,0104/h ≈ US$ 7,59/mes (pay-as-you-go, East US); pode estar dentro da cota gratuita de 750h/mes por 12 meses em conta Azure Free |
+| Virtual Machine `Standard_B2ats_v2` | Sim (compute) | US$ 0,0094/h ≈ US$ 6,86/mes (pay-as-you-go, North Central US, preco de tabela) |
 | Managed Disk (Standard SSD) | Sim | ~US$ 0,01533/GiB/mes |
 | Public IP (SKU Standard) | Sim, mesmo com a VM parada | ~US$ 0,005/h ≈ US$ 3,65/mes |
 | Trafego de saida (egress) | Sim, acima da cota gratuita | Geralmente os primeiros ~100 GB/mes sao gratuitos |
 | NSG, VNet, Subnet | Nao (sem custo direto) | — |
 
-**Estimativa total aproximada:** US$ 11 a US$ 13/mes em pay-as-you-go
-(regiao East US), podendo ser reduzida a praticamente zero de compute
-dentro da cota gratuita da conta Azure Free (12 meses), restando apenas
-o custo do Public IP e do disco. **Estes valores devem ser
+**Estimativa total aproximada:** ~US$ 13/mes em pay-as-you-go com a VM
+ligada 24 h (VM ~6,86 + disco ~2,64 + IP ~3,65), consumidos dos creditos
+do Azure for Students. Desalocar a VM zera o compute. **Estes valores devem ser
 reconfirmados na Calculadora de Precos oficial da Azure antes de
 qualquer provisionamento**, pois variam por regiao e mudam ao longo do
 tempo.

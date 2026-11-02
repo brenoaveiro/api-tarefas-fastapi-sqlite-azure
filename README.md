@@ -33,7 +33,7 @@ documentacao tecnica.
 | Banco de dados | SQLite |
 | Servidor ASGI | Uvicorn |
 | Proxy reverso | Nginx |
-| Maquina virtual | Azure Virtual Machine (Ubuntu Server LTS, SKU `Standard_B1s`) |
+| Maquina virtual | Azure Virtual Machine (Ubuntu Server LTS, SKU `Standard_B2ats_v2`, regiao North Central US) |
 | Gerenciamento de processo | systemd |
 | Testes | Pytest + HTTPX |
 | Documentacao de API | Swagger / OpenAPI (gerado automaticamente pelo FastAPI) |
@@ -149,7 +149,7 @@ diferenca entre disco persistente/temporario/gerenciado) no
 ## 13. Deploy na Azure
 
 Guia completo, com custos estimados, seguranca de rede e scripts de
-instalacao, em [`docs/GUIA_AZURE.md`](docs/GUIA_AZURE.md). Scripts em
+instalacao, em [`docs/GUIA_AZURE.md`](docs/GUIA_AZURE.md). A implantacao real (SKU, regiao, rede, testes, custos) esta em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md). Scripts em
 [`deploy/`](deploy/).
 
 ## 14. Diagramas
@@ -172,7 +172,7 @@ de testes).
 
 - SQLite nao e um banco de producao para alta concorrencia/escala.
 - Sem autenticacao/autorizacao de usuarios.
-- SKU `Standard_B1s` tem recursos minimos (1 vCPU, 1 GiB RAM) — adequada
+- SKU `Standard_B2ats_v2` tem recursos minimos (2 vCPU, 1 GiB RAM) — adequada
   apenas para demonstracao academica de baixo trafego.
 - HTTPS valido requer um dominio proprio apontado para a VM (nao
   incluso por padrao).

@@ -17,7 +17,7 @@ flowchart TB
         NSG["Network Security Group\n(controle de trafego: 22, 80, 443)"]
         VNet["Virtual Network / Subnet"]
 
-        subgraph VM["Azure Virtual Machine — Ubuntu Server LTS (Standard_B1s)"]
+        subgraph VM["Azure Virtual Machine — Ubuntu Server LTS (Standard_B2ats_v2, North Central US)"]
             Nginx["Nginx\n(proxy reverso — portas 80/443)"]
             Uvicorn["Uvicorn + FastAPI\n(127.0.0.1:8000 — nao exposto)"]
             SQLite["SQLite\n/var/lib/api-tarefas/tarefas.db\n(Managed Disk)"]

@@ -120,9 +120,9 @@ simulada deve substituir estas evidencias. Salve os arquivos em
 ### 14. Azure — SKU e configuracoes
 
 - **Tela:** portal Azure, aba "Size" da VM.
-- **O que deve aparecer:** `Standard_B1s`, 1 vCPU, 1 GiB RAM.
+- **O que deve aparecer:** `Standard_B2ats_v2`, 2 vCPU, 1 GiB RAM.
 - **Arquivo:** `14-azure-vm-sku.png`
-- **Legenda:** "Figura 14 — SKU Standard_B1s selecionada para a VM."
+- **Legenda:** "Figura 14 — SKU Standard_B2ats_v2 selecionada para a VM."
 - **Capitulo:** 7.
 
 ### 15. Azure — Disco gerenciado
