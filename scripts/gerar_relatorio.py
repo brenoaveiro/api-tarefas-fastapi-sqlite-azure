@@ -176,7 +176,7 @@ def _imagem(doc, alt, caminho):
         w, h = im.size
     largura = 15.5
     altura = largura * h / w
-    limite = 15.0 if "diagramas" in caminho else 20.0      # diagramas altos: limite menor
+    limite = 20.5 if "diagramas" in caminho else 20.0      # diagramas altos: limite menor
     if altura > limite:                     # imagens muito altas: limita pela altura
         altura = limite
         largura = altura * w / h

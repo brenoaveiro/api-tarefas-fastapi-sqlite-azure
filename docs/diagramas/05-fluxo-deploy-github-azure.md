@@ -1,7 +1,7 @@
 # Diagrama 5 — Fluxo de deploy: GitHub para Azure
 
 ```mermaid
-flowchart LR
+flowchart TB
     A["Desenvolvimento local\nPython + pytest"] -->|git commit / push| B["GitHub\nrepositorio"]
     B -->|push| CI["GitHub Actions\npytest em ambiente limpo"]
     B -->|git pull na VM| C["VM GS-Cloud-API-VM\n/opt/api-tarefas"]

@@ -1,7 +1,7 @@
 # Diagrama 6 — Fluxo de testes e validacao
 
 ```mermaid
-flowchart LR
+flowchart TB
     A["pytest local\n96 testes, sem avisos"] --> B["Banco SQLite\ntemporario isolado"]
     B --> C{"Todos passam?"}
     C -->|nao| D["Corrigir e repetir"]

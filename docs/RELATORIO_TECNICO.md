@@ -48,7 +48,7 @@ As versões fixadas em `requirements.txt` são FastAPI 0.162.0, Starlette 1.10.0
 
 A requisição de um usuário percorre estes componentes: navegador, IP público, grupo de segurança de rede (NSG), rede virtual, Nginx, Uvicorn/FastAPI e SQLite. O Nginx recebe a conexão, que pode ser HTTPS (porta 443) ou HTTP (porta 80), e repassa o pedido ao Uvicorn pela interface local. O FastAPI valida os dados, executa a regra de negócio e consulta o SQLite por meio do SQLAlchemy; a resposta volta pelo mesmo caminho.
 
-Essa separação em camadas tem motivos práticos. O Uvicorn nunca fica exposto diretamente à internet, o que reduz a superfície de ataque. O Nginx concentra o HTTPS e a política de acesso. O arquivo SQLite fica no disco gerenciado da máquina virtual, que persiste mesmo se a máquina for reiniciada. Os diagramas 1 e 2 (seção 13) mostram a estrutura e o fluxo.
+Essa separação em camadas tem motivos práticos. O Uvicorn nunca fica exposto diretamente à internet, o que reduz a superfície de ataque. O Nginx concentra o HTTPS e a política de acesso. O arquivo SQLite fica no disco gerenciado da máquina virtual, que persiste mesmo se a máquina for reiniciada. Os diagramas 1 e 2 (seção 12) mostram a estrutura e o fluxo.
 
 ## 5. API REST
 
@@ -218,7 +218,7 @@ Rede virtual e NSG não têm custo direto. Desalocar a máquina virtual interrom
 - **SQLite.** Não é indicado para muita escrita simultânea nem oferece replicação. Melhoria: banco gerenciado.
 - **Máquina única e 1 GiB de RAM.** Sem alta disponibilidade, com uso de *swap*. Melhoria: tamanho maior e mais de uma instância.
 - **Backups no mesmo disco.** Uma falha do disco afetaria o banco e as cópias. Melhoria: cópias em armazenamento separado.
-- **Conformidade com o Portal.** As capturas do Portal Azure dependem de login manual e não são reproduzidas pelo pipeline de CI.
+- **Evidências do Portal.** As capturas do Portal Azure dependem de login manual e não são reproduzidas pelo pipeline de CI.
 
 ## 15. Conclusão
 

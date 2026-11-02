@@ -1,7 +1,7 @@
 # Diagrama 4 — Cadastro e classificacao de incidentes
 
 ```mermaid
-flowchart LR
+flowchart TB
     A["POST /incidentes\ntitulo, descricao, categoria,\nseveridade, ip_origem..."] --> B{"Dados validos?\nenums, IP, tamanhos"}
     B -->|nao| E["422 Dados invalidos"]
     B -->|sim| C["Grava no SQLite\nstatus = aberto"]
