@@ -4,6 +4,11 @@ Documento gerado a partir da execucao real do deploy em **2026-11-02**.
 Todos os valores abaixo foram lidos da propria Azure ou da VM; os testes
 estao em `docs/evidencias/testes-producao.txt`.
 
+> **Nomes de identificacao da prova (Global Solution / Cloud / API):** o
+> ambiente foi recriado com o padrao `GS_Cloud_API`, pois a Azure nao permite
+> renomear Resource Group nem VM. O nome da VM usa hifens
+> (`GS-Cloud-API-VM`) porque a Azure nao aceita underscore em nome de VM.
+
 ## 1. Por que nao foi usada a `Standard_B1s`
 
 A assinatura **Azure for Students** (tenant "Grupo Alun") tem uma politica
@@ -30,16 +35,16 @@ Antes de qualquer consulta foi preciso registrar (gratuito) os provedores
 | Item | Valor |
 |---|---|
 | Regiao | `northcentralus` (North Central US) |
-| Resource Group | `rg-api-tarefas` |
-| Virtual Machine | `vm-api-tarefas` |
+| Resource Group | `GS_Cloud_API` |
+| Virtual Machine | `GS-Cloud-API-VM` |
 | SKU | `Standard_B2ats_v2` (burstable, AMD) |
 | vCPU / RAM | 2 vCPU / 1 GiB (~0,9 GiB uteis) + swap de 1 GiB criado por nos |
 | Sistema operacional | Ubuntu Server 24.04.5 LTS (x86_64) |
-| Disco do SO | Managed Disk `osdisk-api-tarefas`, Standard SSD LRS, 32 GiB (~30 GiB uteis) |
-| Rede virtual | `vnet-api-tarefas` 10.10.0.0/16, sub-rede `snet-api` 10.10.1.0/24 |
+| Disco do SO | Managed Disk `GS_Cloud_API_Disk`, Standard SSD LRS, 32 GiB (~30 GiB uteis) |
+| Rede virtual | `GS_Cloud_API_VNet` 10.10.0.0/16, sub-rede `GS_Cloud_API_Subnet` 10.10.1.0/24 |
 | IP privado | 10.10.1.4 |
-| IP publico | `pip-api-tarefas`, SKU Standard, estatico, IPv4: **52.159.86.165** |
-| NSG | `nsg-api-tarefas` |
+| IP publico | `GS_Cloud_API_IP`, SKU Standard, estatico, IPv4: **20.80.10.214** |
+| NSG | `GS_Cloud_API_NSG` |
 | Autenticacao | SSH por chave publica (usuario `azureuser`, sem senha) |
 
 ### Regras do NSG
@@ -51,7 +56,7 @@ Antes de qualquer consulta foi preciso registrar (gratuito) os provedores
 | padrao | DenyAllInBound | todas | Qualquer | Negar |
 
 A porta 8000 (Uvicorn) **nao** e exposta: o Uvicorn escuta so em 127.0.0.1 e
-o NSG nao a libera. Teste: `curl http://52.159.86.165:8000/health` -> sem resposta.
+o NSG nao a libera. Teste: `curl http://20.80.10.214:8000/health` -> sem resposta.
 
 ## 3. Software na VM
 
@@ -64,18 +69,18 @@ privilegios `apitarefas`), SQLite em `/var/lib/api-tarefas/tarefas.db`
 
 ```bash
 az provider register -n Microsoft.Compute --wait      # idem Network, Storage
-az group create -n rg-api-tarefas -l northcentralus
-az network vnet create -g rg-api-tarefas -n vnet-api-tarefas --address-prefix 10.10.0.0/16 \
-   --subnet-name snet-api --subnet-prefix 10.10.1.0/24
-az network nsg create -g rg-api-tarefas -n nsg-api-tarefas
+az group create -n GS_Cloud_API -l northcentralus
+az network vnet create -g GS_Cloud_API -n GS_Cloud_API_VNet --address-prefix 10.10.0.0/16 \
+   --subnet-name GS_Cloud_API_Subnet --subnet-prefix 10.10.1.0/24
+az network nsg create -g GS_Cloud_API -n GS_Cloud_API_NSG
 az network nsg rule create ... -n allow-ssh-admin --priority 100 --source-address-prefixes <SEU-IP>/32 --destination-port-ranges 22
 az network nsg rule create ... -n allow-http --priority 110 --destination-port-ranges 80
-az network public-ip create -g rg-api-tarefas -n pip-api-tarefas --sku Standard --allocation-method Static
-az vm create -g rg-api-tarefas -n vm-api-tarefas --size Standard_B2ats_v2 \
+az network public-ip create -g GS_Cloud_API -n GS_Cloud_API_IP --sku Standard --allocation-method Static
+az vm create -g GS_Cloud_API -n GS-Cloud-API-VM --size Standard_B2ats_v2 \
    --image Canonical:ubuntu-24_04-lts:server:latest --admin-username azureuser \
    --ssh-key-values ~/.ssh/id_ed25519_apitarefas.pub --authentication-type ssh \
-   --vnet-name vnet-api-tarefas --subnet snet-api --nsg nsg-api-tarefas \
-   --public-ip-address pip-api-tarefas --os-disk-size-gb 32 --storage-sku StandardSSD_LRS
+   --vnet-name GS_Cloud_API_VNet --subnet GS_Cloud_API_Subnet --nsg GS_Cloud_API_NSG \
+   --public-ip-address GS_Cloud_API_IP --os-disk-size-gb 32 --storage-sku StandardSSD_LRS
 # na VM:
 sudo ./install.sh https://github.com/brenoaveiro/api-tarefas-fastapi-sqlite-azure.git
 ```
@@ -106,7 +111,7 @@ criptografia). Para HTTPS: registrar um dominio, apontar para o IP e rodar
 
 ## 7. Resultados dos testes (reais)
 
-Executados por `scripts/testar_producao.sh` contra `http://52.159.86.165`:
+Executados por `scripts/testar_producao.sh` contra `http://20.80.10.214`:
 **17 aprovados, 0 falhas** — health 200, Swagger `/docs` 200, POST 201, GET 200,
 GET por id 200, PUT 200, POST invalido 422, id inexistente 404, DELETE 204,
 persistencia apos `systemctl restart api-tarefas` confirmada, porta 8000 sem
@@ -127,8 +132,8 @@ Precos de varejo da API publica da Azure; disco e IP foram lidos de outra
 regiao e podem diferir um pouco em `northcentralus`. O saldo de creditos nao
 e exibido pela CLI: consulte o Portal (Assinaturas > Azure for Students >
 Visao geral / Gerenciamento de Custos). **Para parar a cobranca de compute:**
-`az vm deallocate -g rg-api-tarefas -n vm-api-tarefas` (disco e IP continuam
-cobrando). **Para parar tudo:** `az group delete -n rg-api-tarefas`.
+`az vm deallocate -g GS_Cloud_API -n GS-Cloud-API-VM` (disco e IP continuam
+cobrando). **Para parar tudo:** `az group delete -n GS_Cloud_API`.
 
 ## 9. Limitacoes
 

@@ -459,12 +459,12 @@ cota foi a `Standard_B2ats_v2` em `northcentralus`.
 
 | Recurso | Valor real | Por que foi escolhido / como funciona |
 |---|---|---|
-| Resource Group `rg-api-tarefas` | North Central US | Agrupa todos os recursos; apagar o grupo remove tudo de uma vez e encerra a cobranca. |
-| Virtual Network `vnet-api-tarefas` + sub-rede `snet-api` | 10.10.0.0/16 e 10.10.1.0/24 | Rede privada isolada onde a VM recebe o IP 10.10.1.4. |
-| Network Security Group `nsg-api-tarefas` | SSH (22) so do IP do administrador; HTTP (80) publico; demais portas negadas | Firewall da Azure na frente da VM; a porta 8000 do Uvicorn nao e exposta. |
-| IP publico `pip-api-tarefas` | Standard, estatico, 52.159.86.165 | Endereco fixo para acessar a API pela internet; SKU Standard e fechado por padrao e exige NSG. |
-| VM `vm-api-tarefas` | Standard_B2ats_v2, 2 vCPU, 1 GiB RAM, Ubuntu 24.04.5 LTS | Menor VM permitida; "burstable" acumula creditos de CPU para picos. Swap de 1 GiB compensa a pouca RAM. |
-| Managed Disk `osdisk-api-tarefas` | Standard SSD LRS, 32 GiB | Disco persistente: o SQLite sobrevive a reinicios da VM. LRS mantem 3 copias no mesmo datacenter. |
+| Resource Group `GS_Cloud_API` | North Central US | Agrupa todos os recursos; apagar o grupo remove tudo de uma vez e encerra a cobranca. |
+| Virtual Network `GS_Cloud_API_VNet` + sub-rede `GS_Cloud_API_Subnet` | 10.10.0.0/16 e 10.10.1.0/24 | Rede privada isolada onde a VM recebe o IP 10.10.1.4. |
+| Network Security Group `GS_Cloud_API_NSG` | SSH (22) so do IP do administrador; HTTP (80) publico; demais portas negadas | Firewall da Azure na frente da VM; a porta 8000 do Uvicorn nao e exposta. |
+| IP publico `GS_Cloud_API_IP` | Standard, estatico, 20.80.10.214 | Endereco fixo para acessar a API pela internet; SKU Standard e fechado por padrao e exige NSG. |
+| VM `GS-Cloud-API-VM` | Standard_B2ats_v2, 2 vCPU, 1 GiB RAM, Ubuntu 24.04.5 LTS | Menor VM permitida; "burstable" acumula creditos de CPU para picos. Swap de 1 GiB compensa a pouca RAM. |
+| Managed Disk `GS_Cloud_API_Disk` | Standard SSD LRS, 32 GiB | Disco persistente: o SQLite sobrevive a reinicios da VM. LRS mantem 3 copias no mesmo datacenter. |
 | Autenticacao SSH | Chave ed25519, sem senha | Resiste a ataques de forca bruta por senha; a chave privada nunca sai do computador do administrador. |
 
 ### Camada de software na VM

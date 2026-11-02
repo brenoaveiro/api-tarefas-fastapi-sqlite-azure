@@ -122,12 +122,12 @@ ser automatizadas por este assistente.
 2. Confirme a assinatura ativa (Free Trial ou Pay-As-You-Go) em
    **"Subscriptions"**.
 3. Crie um **Resource Group**: "Create a resource" → "Resource group" →
-   nome sugerido `rg-api-tarefas` → regiao sugerida `East US` (ou
+   nome sugerido `GS_Cloud_API` → regiao sugerida `East US` (ou
    `Brazil South`, se preferir menor latencia) → **Review + create**.
 4. Crie a **Virtual Machine**:
    - "Create a resource" → "Virtual Machine".
-   - Resource group: `rg-api-tarefas`.
-   - Nome da VM: `vm-api-tarefas`.
+   - Resource group: `GS_Cloud_API`.
+   - Nome da VM: `GS-Cloud-API-VM`.
    - Regiao: a mesma do Resource Group.
    - Imagem: **Ubuntu Server 24.04 LTS** (ou a LTS mais recente disponivel).
    - Tamanho (Size): **Standard_B1s** (clique em "See all sizes" se nao
@@ -158,8 +158,8 @@ ser automatizadas por este assistente.
    (ex.: US$ 15) e um e-mail de alerta. **Um alerta de orcamento NAO
    bloqueia gastos automaticamente** — ele apenas notifica.
 10. Ao final do trabalho academico, **exclua o Resource Group**
-    (`rg-api-tarefas`) para parar toda cobranca: "Resource groups" →
-    selecione `rg-api-tarefas` → "Delete resource group".
+    (`GS_Cloud_API`) para parar toda cobranca: "Resource groups" →
+    selecione `GS_Cloud_API` → "Delete resource group".
 
 ---
 

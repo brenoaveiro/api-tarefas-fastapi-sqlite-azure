@@ -1,4 +1,4 @@
-Teste de producao em http://52.159.86.165 - 2026-11-02 05:46:34 UTC
+Teste de producao em http://20.80.10.214 - 2026-11-02 17:14:03 UTC
 ------------------------------------------------------------
 [OK]    GET /health -> esperado 200, obtido 200
         corpo: {"status":"ok","database":"ok","version":"1.0.0"}
@@ -24,10 +24,10 @@ active
 --- Seguranca
 [OK]    porta 8000 NAO exposta (sem resposta) -> esperado 000, obtido 000
 --- Banco SQLite na VM
-total 84
--rw------- 1 apitarefas apitarefas 12288 Nov  2 05:45 tarefas.db
--rw------- 1 apitarefas apitarefas 32768 Nov  2 05:46 tarefas.db-shm
--rw------- 1 apitarefas apitarefas 37112 Nov  2 05:46 tarefas.db-wal
+total 68
+-rw------- 1 apitarefas apitarefas 12288 Nov  2 16:45 tarefas.db
+-rw------- 1 apitarefas apitarefas 32768 Nov  2 17:14 tarefas.db-shm
+-rw------- 1 apitarefas apitarefas 20632 Nov  2 17:14 tarefas.db-wal
 wal
 ok
 0

@@ -102,7 +102,7 @@ simulada deve substituir estas evidencias. Salve os arquivos em
 
 ### 12. Azure — Resource Group
 
-- **Tela:** portal Azure, pagina do Resource Group `rg-api-tarefas`.
+- **Tela:** portal Azure, pagina do Resource Group `GS_Cloud_API`.
 - **O que deve aparecer:** nome do grupo, lista de recursos associados (VM, disco, IP, rede).
 - **O que nao deve aparecer:** nome completo da assinatura/ID de cobranca em destaque (pode recortar se preferir).
 - **Arquivo:** `12-azure-resource-group.png`
@@ -145,7 +145,7 @@ simulada deve substituir estas evidencias. Salve os arquivos em
 ### 17. Terminal SSH conectado a VM
 
 - **Tela:** terminal local, apos `ssh azureuser@<IP>`.
-- **O que deve aparecer:** prompt do Ubuntu na VM (ex.: `azureuser@vm-api-tarefas:~$`).
+- **O que deve aparecer:** prompt do Ubuntu na VM (ex.: `azureuser@GS-Cloud-API-VM:~$`).
 - **O que nao deve aparecer:** o IP publico completo, se quiser manter privado (opcional).
 - **Arquivo:** `17-ssh-conectado.png`
 - **Legenda:** "Figura 17 — Conexao SSH estabelecida com a VM."
