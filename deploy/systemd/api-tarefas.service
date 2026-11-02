@@ -1,4 +1,4 @@
-# Servico systemd da API de Tarefas.
+# Servico systemd da CyberIncident API.
 #
 # Instalacao no servidor (Ubuntu):
 #   sudo cp deploy/systemd/api-tarefas.service /etc/systemd/system/api-tarefas.service
@@ -12,7 +12,7 @@
 # aplicacao externamente nas portas 80/443.
 
 [Unit]
-Description=API de Gerenciamento de Tarefas (FastAPI + Uvicorn)
+Description=CyberIncident API - Gerenciamento de Incidentes de Seguranca (FastAPI + Uvicorn)
 After=network.target
 
 [Service]

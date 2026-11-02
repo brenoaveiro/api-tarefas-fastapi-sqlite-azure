@@ -1,0 +1,42 @@
+/* Tema Dark Cybersecurity para o Swagger UI da CyberIncident API (somente CSS; nao altera o funcionamento). */
+:root{--bg:#060d1a;--p:#0e1a2e;--p2:#132340;--b:#1d3557;--t:#e6edf7;--m:#93a8c4;--c:#22d3ee}
+html,body{background:var(--bg)!important;color:var(--t)}
+body{background:radial-gradient(1200px 500px at 80% -10%,#0b2a4a 0,transparent 60%),var(--bg)!important}
+.swagger-ui,.swagger-ui .info .title,.swagger-ui .info p,.swagger-ui .info li,.swagger-ui .info table,
+.swagger-ui .opblock-tag,.swagger-ui .opblock .opblock-summary-description,.swagger-ui .opblock-description-wrapper p,
+.swagger-ui .opblock-external-docs-wrapper p,.swagger-ui table thead tr td,.swagger-ui table thead tr th,
+.swagger-ui .parameter__name,.swagger-ui .parameter__type,.swagger-ui .response-col_status,.swagger-ui .response-col_description,
+.swagger-ui label,.swagger-ui .tab li,.swagger-ui .opblock-section-header h4,.swagger-ui .opblock-section-header label,
+.swagger-ui .model-title,.swagger-ui .model,.swagger-ui section.models h4,.swagger-ui .responses-inner h4,.swagger-ui .responses-inner h5{color:var(--t)!important}
+.swagger-ui .info .title{font-size:2.2rem}
+.swagger-ui .info .title small{background:var(--c);color:#00232b}
+.swagger-ui .info a,.swagger-ui a.nostyle{color:var(--c)}
+.swagger-ui .info code,.swagger-ui .markdown code{background:var(--p2);color:var(--c);padding:1px 6px;border-radius:4px}
+.swagger-ui .scheme-container{background:var(--p);box-shadow:none;border-bottom:1px solid var(--b)}
+.swagger-ui .opblock-tag{border-bottom:1px solid var(--b)}
+.swagger-ui .opblock{background:var(--p);border-color:var(--b)!important;box-shadow:none}
+.swagger-ui .opblock .opblock-section-header{background:var(--p2);box-shadow:none}
+.swagger-ui .opblock .opblock-summary-path,.swagger-ui .opblock .opblock-summary-path__deprecated{color:var(--t)!important}
+.swagger-ui .opblock.opblock-get{background:rgba(34,211,238,.06)}.swagger-ui .opblock.opblock-get .opblock-summary-method{background:#0891b2}
+.swagger-ui .opblock.opblock-post{background:rgba(34,197,94,.07)}.swagger-ui .opblock.opblock-post .opblock-summary-method{background:#16a34a}
+.swagger-ui .opblock.opblock-put{background:rgba(249,115,22,.07)}.swagger-ui .opblock.opblock-put .opblock-summary-method{background:#ea580c}
+.swagger-ui .opblock.opblock-patch{background:rgba(234,179,8,.07)}.swagger-ui .opblock.opblock-patch .opblock-summary-method{background:#ca8a04}
+.swagger-ui .opblock.opblock-delete{background:rgba(239,68,68,.07)}.swagger-ui .opblock.opblock-delete .opblock-summary-method{background:#dc2626}
+.swagger-ui .btn{background:transparent;color:var(--t);border-color:var(--c);box-shadow:none}
+.swagger-ui .btn.execute{background:var(--c);color:#00232b;border-color:var(--c)}
+.swagger-ui .btn.try-out__btn{border-color:var(--c);color:var(--c)}
+.swagger-ui input[type=text],.swagger-ui textarea,.swagger-ui select{background:#0a1426;color:var(--t);border:1px solid var(--b)}
+.swagger-ui .highlight-code,.swagger-ui .microlight{background:#050b16!important}
+.swagger-ui table tbody tr td{color:var(--t);border-color:var(--b)}
+.swagger-ui section.models{border-color:var(--b)}.swagger-ui section.models.is-open h4{border-color:var(--b)}
+.swagger-ui .model-box{background:var(--p)}
+.swagger-ui svg:not(:root){fill:var(--m)}
+.swagger-ui .topbar{display:none}
+/* faixa de marca inserida por swagger-tema.js */
+#ci-faixa{display:flex;align-items:center;gap:14px;padding:14px clamp(16px,4vw,40px);background:rgba(6,13,26,.9);border-bottom:1px solid var(--b)}
+#ci-faixa svg{width:36px;height:36px;fill:#0b1f3a;stroke:var(--c);stroke-width:3}
+#ci-faixa .check{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+#ci-faixa b{display:block;font:700 1.15rem system-ui,Arial}
+#ci-faixa span{color:var(--m);font:.82rem system-ui,Arial}
+#ci-faixa nav{margin-left:auto;display:flex;gap:14px}
+#ci-faixa a{color:var(--c);text-decoration:none;font:600 .9rem system-ui,Arial}

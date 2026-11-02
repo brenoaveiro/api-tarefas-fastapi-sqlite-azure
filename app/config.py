@@ -21,8 +21,8 @@ class Settings:
     """Agrupa todas as configuracoes da aplicacao."""
 
     # Nome e versao exibidos na documentacao Swagger.
-    APP_NAME: str = os.getenv("APP_NAME", "API de Gerenciamento de Tarefas")
-    APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
+    APP_NAME: str = os.getenv("APP_NAME", "CyberIncident API")
+    APP_VERSION: str = os.getenv("APP_VERSION", "2.0.0")
 
     # Caminho do banco SQLite. Em desenvolvimento, fica dentro do projeto,
     # em ./data/tarefas.db (fora do controle de versao, ver .gitignore).

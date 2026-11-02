@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CyberIncident API - Dashboard SOC</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+  <a class="skip" href="#conteudo">Ir para o conteudo</a>
+  <header class="topo">
+    <div class="marca">
+      <svg class="escudo" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 8 13v17c0 15 10 25 24 30 14-5 24-15 24-30V13z"/><path class="check" d="M22 32l8 8 14-16"/></svg>
+      <div>
+        <h1>CyberIncident API</h1>
+        <p>SOC Incident Management &middot; Gerenciamento de Incidentes de Seguranca Cibernetica</p>
+      </div>
+    </div>
+    <nav aria-label="Navegacao principal">
+      <a href="/" aria-current="page">Dashboard</a>
+      <a href="/docs">Swagger</a>
+      <a href="/openapi.json">OpenAPI JSON</a>
+      <a href="https://github.com/brenoaveiro/api-tarefas-fastapi-sqlite-azure" rel="noopener noreferrer">GitHub</a>
+    </nav>
+    <div id="saude" class="saude" role="status" aria-live="polite"><span class="ponto"></span><span id="saude-txt">verificando...</span></div>
+  </header>
+
+  <main id="conteudo">
+    <section class="cards" aria-label="Indicadores">
+      <article class="card"><h2>Total de incidentes</h2><p class="num" id="k-total">-</p></article>
+      <article class="card critico"><h2>Incidentes criticos</h2><p class="num" id="k-criticos">-</p></article>
+      <article class="card aberto"><h2>Incidentes abertos</h2><p class="num" id="k-abertos">-</p></article>
+      <article class="card ok"><h2>Incidentes resolvidos</h2><p class="num" id="k-resolvidos">-</p></article>
+    </section>
+
+    <section class="painel" aria-labelledby="t-sev">
+      <h2 id="t-sev">Incidentes por severidade</h2>
+      <div id="grafico" class="grafico"></div>
+    </section>
+
+    <section class="painel" aria-labelledby="t-inc">
+      <h2 id="t-inc">Incidentes mais recentes</h2>
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Titulo</th><th>Categoria</th><th>Severidade</th><th>Status</th><th>Data (UTC)</th></tr></thead>
+          <tbody id="tabela"><tr><td colspan="6" class="vazio">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    Projeto academico &middot; todos os dados sao ficticios &middot; conexao HTTP (sem HTTPS) &middot; leitura publica, escrita restrita por IP
+  </footer>
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

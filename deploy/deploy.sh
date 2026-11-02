@@ -23,7 +23,7 @@ if [[ ! -d "$APP_DIR/.git" ]]; then
 fi
 
 echo "==> 1/5: Fazendo backup do banco antes da atualizacao"
-"$APP_DIR/deploy/backup.sh" || echo "AVISO: backup falhou ou script de backup nao encontrado. Prosseguindo com cautela."
+bash "$APP_DIR/deploy/backup.sh" || { echo "ERRO: backup falhou. Deploy abortado (nenhuma alteracao feita)."; exit 1; }
 
 echo "==> 2/5: Atualizando o codigo (git pull)"
 sudo -u "$SERVICE_USER" git -C "$APP_DIR" pull --ff-only
@@ -31,7 +31,9 @@ sudo -u "$SERVICE_USER" git -C "$APP_DIR" pull --ff-only
 echo "==> 3/5: Atualizando dependencias Python"
 sudo -u "$SERVICE_USER" "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.txt"
 
-echo "==> 4/5: Reiniciando o servico"
+echo "==> 4/5: Atualizando a unidade systemd e reiniciando o servico"
+install -m 644 -o root -g root "$APP_DIR/deploy/systemd/${SERVICE_NAME}.service" "/etc/systemd/system/${SERVICE_NAME}.service"
+systemctl daemon-reload
 systemctl restart "$SERVICE_NAME"
 sleep 2
 

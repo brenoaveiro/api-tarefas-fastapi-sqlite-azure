@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# install.sh — Instalacao inicial da API de Tarefas em uma VM Ubuntu
+# install.sh — Instalacao inicial da CyberIncident API em uma VM Ubuntu
 # (Azure, SKU Standard_B1s ou equivalente).
 #
 # Este script e idempotente: pode ser executado novamente sem destruir
@@ -20,7 +20,7 @@
 # Sobre o arquivo .env
 # --------------------
 # O .env NUNCA e carregado com "source"/"." (isso o executaria como
-# script Bash: "APP_NAME=API de Tarefas" tentaria rodar o comando "de").
+# script Bash: "APP_NAME=CyberIncident API" tentaria rodar o comando "de").
 # Ele e lido como DADO, seguindo as mesmas regras do systemd
 # (EnvironmentFile=), que e quem realmente o entrega a aplicacao:
 #   - uma atribuicao por linha, no formato CHAVE=valor;
@@ -190,8 +190,8 @@ verify_database() {
   integrity="$(as_service sqlite3 "$db" 'PRAGMA integrity_check;')"
   [[ "$integrity" == "ok" ]] || die "integrity_check do SQLite falhou: ${integrity}"
   tables="$(as_service sqlite3 "$db" ".tables")"
-  [[ " ${tables} " == *[[:space:]]tarefas[[:space:]]* ]] || die "Tabela 'tarefas' nao encontrada em ${db}."
-  echo "    Banco OK: modo WAL, integridade ok, tabela 'tarefas' presente."
+  [[ " ${tables} " == *[[:space:]]incidentes[[:space:]]* ]] || die "Tabela 'incidentes' nao encontrada em ${db}."
+  echo "    Banco OK: modo WAL, integridade ok, tabela 'incidentes' presente."
 }
 
 # check_mode ALVO DONO:GRUPO MODO — auditoria de permissao.

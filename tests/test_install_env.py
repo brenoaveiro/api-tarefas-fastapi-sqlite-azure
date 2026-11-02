@@ -66,10 +66,10 @@ def test_valor_com_espacos_nao_e_executado_como_comando():
     # Com `source .env` isto tentaria rodar o comando "de" e "dados".
     r = bash(
         'env_get "$ENVF" APP_NAME',
-        "APP_NAME=API de Gerenciamento de Tarefas\nTITULO=oi $(touch /tmp/pwned) `id`\n",
+        "APP_NAME=CyberIncident API\nTITULO=oi $(touch /tmp/pwned) `id`\n",
     )
     assert r.returncode == 0, r.stderr
-    assert r.stdout == "API de Gerenciamento de Tarefas"
+    assert r.stdout == "CyberIncident API"
     r = bash('env_get "$ENVF" TITULO', "TITULO=oi $(touch /tmp/pwned) `id`; rm -rf x\n")
     assert r.stdout == "oi $(touch /tmp/pwned) `id`; rm -rf x"
 
@@ -119,7 +119,7 @@ def test_env_example_e_valido_apos_ajuste_do_banco_e_compativel_com_config():
     saida = r.stdout.splitlines()
     assert "VALIDO" in saida
     assert "URL=sqlite:////var/lib/api-tarefas/tarefas.db" in saida
-    assert "NOME=API de Gerenciamento de Tarefas" in saida
+    assert "NOME=CyberIncident API" in saida
     assert saida[-1] == "1"  # sem duplicatas de DATABASE_URL
     # A linha de exemplo comentada para producao nao pode ser alterada.
     assert "# DATABASE_URL=sqlite:////var/lib/api-tarefas/tarefas.db" in bash(
@@ -145,7 +145,7 @@ def test_valores_lidos_chegam_ao_config_py(monkeypatch):
 
     novo = importlib.reload(config).settings
     try:
-        assert novo.APP_NAME == "API de Gerenciamento de Tarefas"
+        assert novo.APP_NAME == "CyberIncident API"
         assert novo.DATABASE_URL == "sqlite:////var/lib/api-tarefas/tarefas.db"
         assert novo.MAX_PAGE_SIZE == 100
         assert novo.SEED_DEMO_DATA is False
