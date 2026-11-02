@@ -1,0 +1,36 @@
+# Servico systemd da API de Tarefas.
+#
+# Instalacao no servidor (Ubuntu):
+#   sudo cp deploy/systemd/api-tarefas.service /etc/systemd/system/api-tarefas.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable api-tarefas
+#   sudo systemctl start api-tarefas
+#
+# O servico roda como o usuario de sistema "apitarefas" (sem privilegios
+# administrativos e sem shell de login), criado pelo script install.sh.
+# O Uvicorn escuta somente em 127.0.0.1:8000 — o Nginx e quem expoe a
+# aplicacao externamente nas portas 80/443.
+
+[Unit]
+Description=API de Gerenciamento de Tarefas (FastAPI + Uvicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=apitarefas
+Group=apitarefas
+WorkingDirectory=/opt/api-tarefas
+EnvironmentFile=/opt/api-tarefas/.env
+ExecStart=/opt/api-tarefas/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=5
+
+# Protecoes basicas de seguranca do sandbox do systemd.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/api-tarefas
+
+[Install]
+WantedBy=multi-user.target
