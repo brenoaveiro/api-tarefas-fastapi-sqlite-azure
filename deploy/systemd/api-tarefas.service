@@ -20,7 +20,12 @@ Type=simple
 User=apitarefas
 Group=apitarefas
 WorkingDirectory=/opt/api-tarefas
+# O systemd le este arquivo como DADO (nao executa como shell): valores com
+# espacos nao precisam de aspas. O .env e root:root 600 (ver install.sh); o
+# systemd o le como root antes de trocar para o usuario "apitarefas".
 EnvironmentFile=/opt/api-tarefas/.env
+# Banco e arquivos -wal/-shm criados com modo 600 (so o usuario de servico).
+UMask=0077
 ExecStart=/opt/api-tarefas/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 Restart=on-failure
 RestartSec=5
