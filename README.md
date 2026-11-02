@@ -6,12 +6,11 @@
 
 API REST acadêmica, em Python/FastAPI com SQLite, que simula o registro de incidentes de uma central de operações de segurança (SOC). Hospedada em uma máquina virtual na Microsoft Azure.
 
-- **Aplicação (dashboard):** https://20.80.10.214/
-- **Swagger (documentação interativa):** https://20.80.10.214/docs
-- **Health check:** https://20.80.10.214/health
-- Também disponível em HTTP: http://20.80.10.214/
+> **Documento oficial do trabalho:** [GS_CloudSec_BrenoAveiro.pdf](docs/GS_CloudSec_BrenoAveiro.pdf) (Global Solution — Cloud Security). É a explicação oficial do projeto; os demais arquivos de `docs/` são material de apoio.
 
-> **Avisos:** todos os dados são **fictícios**. O HTTPS usa um certificado Let's Encrypt emitido para o **endereço IP** (validade de cerca de 6 dias, renovação automática); o HTTP continua ativo como contingência. A leitura (GET) é pública; a escrita (POST, PUT, PATCH, DELETE) é restrita por IP no Nginx, pois a API não tem autenticação de usuários.
+> **Status da hospedagem:** a aplicação ficou publicada na Azure (VM Ubuntu com Nginx, HTTPS e SQLite) e foi **validada e documentada**; depois disso, **todos os recursos do Resource Group `GS_Cloud_API` foram excluídos** para encerrar qualquer custo. Por isso os endereços `https://20.80.10.214/` citados nos documentos **não respondem mais**. As evidências reais (18 capturas, logs de produção, 96 testes e CI) permanecem em [`docs/screenshots`](docs/screenshots), [`docs/evidencias`](docs/evidencias) e no relatório. O projeto continua executável localmente (veja abaixo).
+
+> **Avisos:** todos os dados são **fictícios**. Durante a hospedagem, o HTTPS usava um certificado Let's Encrypt emitido para o **endereço IP** (validade de cerca de 6 dias, renovação automática). A leitura (GET) era pública; a escrita (POST, PUT, PATCH, DELETE) era restrita por IP no Nginx, pois a API não tem autenticação de usuários.
 
 ## O que a aplicação faz
 
@@ -96,7 +95,7 @@ O detalhamento (por que a `Standard_B1s` não foi usada, comandos, HTTPS, custos
 
 ## Documentação
 
-[Relatório técnico](docs/RELATORIO_TECNICO.md) · [Word](docs/relatorio-final.docx) · [PDF](docs/relatorio-final.pdf) · [Matriz de conformidade](docs/MATRIZ_CONFORMIDADE.md) · [Auditoria final](docs/AUDITORIA_FINAL.md) · [Defesa oral](docs/DEFESA_ORAL.md) · [Apresentação](docs/APRESENTACAO.md) · [Guia de testes](docs/GUIA_TESTES.md) · [Deploy real na Azure](docs/DEPLOY_AZURE_REAL.md) · [Guia de evidências](docs/GUIA_PRINTS.md) · [Diagramas](docs/diagramas/)
+[**Documento oficial (PDF)**](docs/GS_CloudSec_BrenoAveiro.pdf) · [Relatório técnico](docs/RELATORIO_TECNICO.md) · [Word](docs/relatorio-final.docx) · [PDF](docs/relatorio-final.pdf) · [Matriz de conformidade](docs/MATRIZ_CONFORMIDADE.md) · [Auditoria final](docs/AUDITORIA_FINAL.md) · [Defesa oral](docs/DEFESA_ORAL.md) · [Apresentação](docs/APRESENTACAO.md) · [Guia de testes](docs/GUIA_TESTES.md) · [Deploy real na Azure](docs/DEPLOY_AZURE_REAL.md) · [Guia de evidências](docs/GUIA_PRINTS.md) · [Diagramas](docs/diagramas/)
 
 ## Licença
 
