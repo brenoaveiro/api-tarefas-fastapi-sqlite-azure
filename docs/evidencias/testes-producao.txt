@@ -1,4 +1,4 @@
-Teste de producao da CyberIncident API em http://20.80.10.214 - 2026-11-02 18:52:50 UTC
+Teste de producao da CyberIncident API em http://20.80.10.214 - 2026-11-02 19:14:01 UTC
 ------------------------------------------------------------
 --- Disponibilidade e interface
 [OK]    GET /health -> esperado 200, obtido 200
@@ -10,11 +10,11 @@ Teste de producao da CyberIncident API em http://20.80.10.214 - 2026-11-02 18:52
 [OK]    Swagger usa assets locais (sem CDN) -> esperado 0, obtido 0
 [OK]    GET /openapi.json -> esperado 200, obtido 200
 --- Estatisticas coerentes com a listagem
-[OK]    estatisticas.total == listagem.total -> esperado 0, obtido 0
-[OK]    soma por_severidade == total -> esperado 0, obtido 0
+[OK]    estatisticas.total == listagem.total -> esperado 9, obtido 9
+[OK]    soma por_severidade == total -> esperado 9, obtido 9
 --- CRUD (incidente ficticio de teste)
 [OK]    POST /incidentes -> esperado 201, obtido 201
-        id criado: 1
+        id criado: 10
 [OK]    status inicial = aberto -> esperado aberto, obtido aberto
 [OK]    GET /incidentes -> esperado 200, obtido 200
 [OK]    GET /incidentes?severidade=media -> esperado 200, obtido 200
@@ -33,7 +33,7 @@ active
 [OK]    incidente preservado apos reinicio -> esperado resolvido, obtido resolvido
 [OK]    DELETE /incidentes/{id} -> esperado 204, obtido 204
 [OK]    GET apos DELETE -> esperado 404, obtido 404
-[OK]    total voltou ao valor inicial -> esperado 0, obtido 0
+[OK]    total voltou ao valor inicial -> esperado 9, obtido 9
 --- Seguranca
 [OK]    porta 8000 NAO exposta -> esperado 000, obtido 000
         escrita a partir de IP NAO autorizado (a propria VM): POST=403 PUT=403 PATCH=403 DELETE=403 
