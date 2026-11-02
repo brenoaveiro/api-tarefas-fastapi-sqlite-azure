@@ -111,13 +111,14 @@ criptografia). Para HTTPS: registrar um dominio, apontar para o IP e rodar
 
 ## 7. Resultados dos testes (reais)
 
-Executados por `scripts/testar_producao.sh` contra `http://20.80.10.214`:
-**17 aprovados, 0 falhas** — health 200, Swagger `/docs` 200, POST 201, GET 200,
-GET por id 200, PUT 200, POST invalido 422, id inexistente 404, DELETE 204,
-persistencia apos `systemctl restart api-tarefas` confirmada, porta 8000 sem
-resposta. SQLite: `journal_mode=wal`, `integrity_check=ok`. Saida completa em
-`docs/evidencias/testes-producao.txt`.
-Testes automatizados locais: 34 aprovados (19 API + 15 instalador).
+Executados por `scripts/testar_producao.sh` contra `http://20.80.10.214`
+(CyberIncident API): **30 aprovados, 0 falhas** — health 200, dashboard e Swagger
+200 (sem CDN), estatisticas coerentes com a listagem, POST 201, GET 200, PUT 200,
+PATCH 200 e 422 em transicao invalida, DELETE 204, 404 em id inexistente,
+persistencia apos `systemctl restart api-tarefas`, porta 8000 sem resposta,
+POST/PUT/PATCH/DELETE de IP nao autorizado = 403 e tabela antiga `tarefas`
+preservada. Saida completa em `docs/evidencias/testes-producao.txt`.
+Testes automatizados locais: **55 aprovados** (40 da CyberIncident API + 15 do instalador).
 
 ## 8. Custos estimados (Linux, pay-as-you-go, ligada 24 h)
 
@@ -142,3 +143,23 @@ cobrando). **Para parar tudo:** `az group delete -n GS_Cloud_API`.
 - SQLite no disco do SO (Managed Disk persistente), sem disco de dados separado.
 - Se o seu IP publico mudar, atualize a regra `allow-ssh-admin` do NSG e o
   arquivo `api-tarefas-writers.conf`.
+
+## 10. Atualizacao para a CyberIncident API (2026-11-02)
+
+A aplicacao foi transformada de uma API de tarefas em uma plataforma de
+gerenciamento de incidentes de seguranca **na mesma VM**, sem recriar nenhum
+recurso Azure. Passos executados:
+
+1. Estado verificado por SSH: commit anterior `d72e3f7`, 27 GB livres, servicos ativos.
+2. Backup consistente do SQLite (`sqlite3 .backup`) com `PRAGMA integrity_check = ok`.
+   O backup antigo estava inoperante: `deploy/backup.sh` nao era executavel e o `deploy.sh`
+   apenas avisava e seguia. Corrigido: agora usa `bash` e **aborta** se o backup falhar.
+3. `git pull` e `deploy/deploy.sh` (backup, pull, pip, unidade systemd, restart, health).
+4. `.env` da VM: somente `APP_NAME` e `APP_VERSION` foram ajustados (o resto foi preservado).
+5. Migracao nao destrutiva: a aplicacao cria a tabela `incidentes` ao iniciar; a tabela
+   `tarefas` (1 registro) permanece intacta no mesmo arquivo `tarefas.db`.
+6. Dados de demonstracao: incidentes ficticios `[DEMO]`, com IPs das faixas de
+   documentacao (RFC 5737), cadastrados pela API.
+
+Rollback: voltar ao commit `d72e3f7` (`git checkout`) e reiniciar o servico; o banco
+so e restaurado do backup (`/var/lib/api-tarefas/backups/`) se necessario.

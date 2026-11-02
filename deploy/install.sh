@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # install.sh — Instalacao inicial da CyberIncident API em uma VM Ubuntu
-# (Azure, SKU Standard_B1s ou equivalente).
+# (Azure, SKU Standard_B2ats_v2 ou equivalente).
 #
 # Este script e idempotente: pode ser executado novamente sem destruir
 # configuracoes existentes. Ele NAO sobrescreve um .env ja presente.

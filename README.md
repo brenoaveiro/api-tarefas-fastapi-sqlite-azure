@@ -1,200 +1,98 @@
-# API de Gerenciamento de Tarefas na Azure
+# CyberIncident API
 
-> Projeto academico: API REST em Python/FastAPI, com persistencia em
-> SQLite, preparada para hospedagem em uma Azure Virtual Machine Ubuntu
-> com Nginx + systemd.
+**Plataforma de Gerenciamento de Incidentes de Segurança Cibernética**
 
-## 1. Descricao do projeto
+API REST acadêmica, em Python/FastAPI com SQLite, que simula o registro de incidentes de uma central de operações de segurança (SOC). Hospedada em uma máquina virtual na Microsoft Azure.
 
-Esta API permite cadastrar, listar, consultar, atualizar e excluir
-tarefas (CRUD completo), com validacao de dados, tratamento de erros
-HTTP, documentacao automatica (Swagger/OpenAPI) e persistencia em
-arquivo SQLite. O projeto foi desenvolvido para demonstrar, de forma
-pratica e reproduzivel, o ciclo completo de uma API hospedada em nuvem:
-desenvolvimento → testes → controle de versao → publicacao no GitHub →
-implantacao em uma VM na Microsoft Azure.
+- **Aplicação (dashboard):** http://20.80.10.214/
+- **Swagger (documentação interativa):** http://20.80.10.214/docs
+- **Health check:** http://20.80.10.214/health
 
-## 2. Objetivo academico
+> **Aviso:** todos os dados são **fictícios**. A conexão é **HTTP (sem HTTPS)**, pois não há domínio próprio para emitir certificado. A leitura (GET) é pública; a escrita (POST, PUT, PATCH, DELETE) é restrita por IP no Nginx.
 
-Demonstrar, com evidencias reais (codigo executavel, testes aprovados e
-capturas de tela), a construcao e a implantacao de uma API REST em
-ambiente de nuvem, cobrindo desenvolvimento backend, persistencia de
-dados, infraestrutura como VM, seguranca basica de rede/aplicacao e
-documentacao tecnica.
+## O que a aplicação faz
 
-## 3. Tecnologias utilizadas
+Permite registrar, consultar, classificar, acompanhar e gerenciar incidentes como phishing, malware, força bruta, acesso indevido, vazamento de dados e anomalias de rede. Cada incidente tem severidade (`baixa`, `media`, `alta`, `critica`), status (`aberto`, `em_analise`, `contido`, `resolvido`), IP de origem opcional, ativo afetado e datas em UTC. A aplicação **não** detecta ameaças de verdade.
 
-| Camada | Tecnologia |
+| Método e rota | Função |
 |---|---|
-| Linguagem | Python 3.13 |
-| Framework de API | FastAPI |
-| Validacao | Pydantic |
-| ORM / persistencia | SQLAlchemy |
-| Banco de dados | SQLite |
-| Servidor ASGI | Uvicorn |
-| Proxy reverso | Nginx |
-| Maquina virtual | Azure Virtual Machine (Ubuntu Server LTS, SKU `Standard_B2ats_v2`, regiao North Central US) |
-| Gerenciamento de processo | systemd |
-| Testes | Pytest + HTTPX |
-| Documentacao de API | Swagger / OpenAPI (gerado automaticamente pelo FastAPI) |
-| Diagramas | Mermaid |
-| Controle de versao | Git + GitHub |
+| `GET /` | Dashboard SOC (cartões, gráfico por severidade e tabela de incidentes) |
+| `GET /health` | Disponibilidade da API e do SQLite |
+| `GET /incidentes` | Lista com paginação e filtros (`severidade`, `status`, `categoria`) |
+| `GET /incidentes/estatisticas` | Contagens reais por status, severidade e categoria |
+| `GET /incidentes/{id}` | Consulta um incidente |
+| `POST /incidentes` | Cadastra (status inicial `aberto`) |
+| `PUT /incidentes/{id}` | Atualiza todos os campos |
+| `PATCH /incidentes/{id}/status` | Altera somente o status (respeita o fluxo de tratamento) |
+| `DELETE /incidentes/{id}` | Exclui um incidente de demonstração |
 
-## 4. Arquitetura
+O status segue o fluxo `aberto → em_analise → contido/resolvido`; resolvido pode ser reaberto. Transições fora do fluxo retornam 422. `resolvido_em` é preenchido ao resolver e limpo ao reabrir.
 
-Veja os diagramas completos em [`docs/diagramas/`](docs/diagramas/).
-Resumo do fluxo:
+## Tecnologias
 
+Python 3 · FastAPI · Pydantic · SQLAlchemy · SQLite · Uvicorn · Nginx · systemd · HTML/CSS/JavaScript (sem frameworks) · Swagger UI (servido localmente) · Pytest · Git/GitHub · Microsoft Azure (VM Ubuntu 24.04).
+
+## Estrutura do projeto
+
+```text
+app/            API (main, models, schemas, crud, enums) e interface (static/: dashboard e tema do Swagger)
+deploy/         install.sh, deploy.sh, backup.sh, configuração do Nginx e do systemd
+docs/           relatório técnico, guias, roteiro de apresentação, diagramas e evidências
+scripts/        testar_producao.sh e gerar_relatorio.py
+tests/          55 testes automatizados (pytest)
 ```
-Usuario -> Internet -> IP publico -> NSG -> VM Ubuntu -> Nginx -> Uvicorn/FastAPI -> SQLite (disco persistente)
-```
 
-## 5. Pre-requisitos
-
-- Python 3.11 ou superior.
-- Git.
-- (Para deploy) Conta Microsoft Azure com assinatura ativa e acesso SSH.
-
-## 6. Instalacao local
+## Executar localmente
 
 ```bash
-git clone https://github.com/<seu-usuario>/api-tarefas-fastapi-sqlite-azure.git
-cd api-tarefas-fastapi-sqlite-azure
 python -m venv .venv
-
-# Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Linux / macOS:
-source .venv/bin/activate
-
+.venv\Scripts\activate                 # Linux/macOS: source .venv/bin/activate
 pip install -r requirements-dev.txt
-cp .env.example .env
-```
-
-## 7. Configuracao
-
-Edite o arquivo `.env` (nunca o `.env.example`) se precisar alterar o
-caminho do banco de dados ou outros limites. Veja todas as variaveis em
-[`.env.example`](.env.example).
-
-## 8. Inicializando a aplicacao
-
-```bash
+copy .env.example .env                 # Linux/macOS: cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-A aplicacao cria o banco de dados e as tabelas automaticamente na
-primeira execucao. Acesse a documentacao interativa em:
+Abra http://127.0.0.1:8000/ (dashboard) e http://127.0.0.1:8000/docs (Swagger). O banco local fica em `data/` (ignorado pelo Git). Para ver dados de exemplo, defina `SEED_DEMO_DATA=true` no `.env`.
 
-- Swagger UI: http://127.0.0.1:8000/docs
-- OpenAPI JSON: http://127.0.0.1:8000/openapi.json
-
-## 9. Endpoints
-
-| Metodo | Caminho | Descricao | Status de sucesso |
-|---|---|---|---|
-| GET | `/health` | Saude da aplicacao e do banco | 200 |
-| GET | `/tarefas` | Lista tarefas (paginado: `skip`, `limit`) | 200 |
-| GET | `/tarefas/{id}` | Consulta uma tarefa | 200 / 404 |
-| POST | `/tarefas` | Cria uma tarefa | 201 |
-| PUT | `/tarefas/{id}` | Atualiza uma tarefa | 200 / 404 |
-| DELETE | `/tarefas/{id}` | Exclui uma tarefa | 204 / 404 |
-
-## 10. Exemplos de requisicoes
-
-**Criar uma tarefa:**
+## Testes
 
 ```bash
-curl -X POST http://127.0.0.1:8000/tarefas \
-  -H "Content-Type: application/json" \
-  -d '{"titulo": "Estudar para a prova", "descricao": "Capitulo 4"}'
+python -m pytest -q                                              # 55 testes locais
+./scripts/testar_producao.sh <IP-PUBLICO> <chave-ssh>            # 30 verificações na VM
 ```
 
-**Resposta (HTTP 201):**
+Detalhes em [`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md).
 
-```json
-{
-  "titulo": "Estudar para a prova",
-  "descricao": "Capitulo 4",
-  "id": 1,
-  "concluida": false,
-  "criada_em": "2026-11-01T10:00:00.000000",
-  "atualizada_em": "2026-11-01T10:00:00.000000"
-}
-```
+## Infraestrutura Azure (valores reais)
 
-**Listar tarefas (paginado):**
+| Item | Valor |
+|---|---|
+| Região | North Central US |
+| Resource Group | `GS_Cloud_API` |
+| Máquina virtual | `GS-Cloud-API-VM` — `Standard_B2ats_v2` (2 vCPU, 1 GiB) — Ubuntu Server 24.04 LTS |
+| Disco | `GS_Cloud_API_Disk` — Standard SSD LRS, 32 GiB (Managed Disk) |
+| Rede | `GS_Cloud_API_VNet` / `GS_Cloud_API_Subnet`, IP público Standard estático, NSG `GS_Cloud_API_NSG` |
+| Banco | SQLite em `/var/lib/api-tarefas/tarefas.db` (disco persistente) |
+| Serviços | Nginx (porta 80) → Uvicorn (`127.0.0.1:8000`) gerenciado pelo systemd (`api-tarefas`) |
 
-```bash
-curl "http://127.0.0.1:8000/tarefas?skip=0&limit=10"
-```
+O detalhamento (por que a `Standard_B1s` não foi usada, comandos, custos e atualização para a CyberIncident API) está em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md).
 
-## 11. Execucao dos testes
+## Segurança
 
-```bash
-pytest
-```
+- NSG: SSH só do IP do administrador; apenas a porta 80 pública; a porta 8000 nunca é exposta.
+- Nginx: escrita só para IPs autorizados (arquivo local da VM, fora do Git); os demais recebem 403.
+- Consultas parametrizadas (ORM), `textContent` no dashboard e CSP contra XSS, sem CORS aberto, erros 500 sem detalhes.
+- `.env`, banco, chaves e backups não são versionados (`.gitignore`).
+- **Limitações:** sem HTTPS, sem autenticação de usuários, SQLite para baixa concorrência e VM com 1 GiB de RAM.
 
-Resultado obtido durante o desenvolvimento deste projeto: **19
-testes aprovados** (0 falhas). Veja detalhes em
-[`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md).
+## Atualização e backup
 
-## 12. Banco de dados
+`sudo /opt/api-tarefas/deploy/deploy.sh` (na VM) faz backup consistente do SQLite, **aborta se o backup falhar**, atualiza o código, a unidade systemd e reinicia o serviço. A criação da tabela `incidentes` é não destrutiva; a tabela antiga `tarefas` é preservada.
 
-SQLite, com arquivo persistente configuravel via `DATABASE_URL`. Veja a
-explicacao completa (o que e, por que foi escolhido, limitacoes, e
-diferenca entre disco persistente/temporario/gerenciado) no
-[Capitulo 6 do relatorio tecnico](docs/RELATORIO_TECNICO.md#capitulo-6--banco-de-dados).
+## Documentação
 
-## 13. Deploy na Azure
+[Relatório técnico](docs/RELATORIO_TECNICO.md) · [Relatório Word](docs/relatorio-final.docx) · [Relatório PDF](docs/relatorio-final.pdf) · [Guia Azure](docs/GUIA_AZURE.md) · [Guia de testes](docs/GUIA_TESTES.md) · [Guia de evidências](docs/GUIA_PRINTS.md) · [Apresentação](docs/APRESENTACAO.md) · [Diagramas](docs/diagramas/)
 
-Guia completo, com custos estimados, seguranca de rede e scripts de
-instalacao, em [`docs/GUIA_AZURE.md`](docs/GUIA_AZURE.md). A implantacao real (SKU, regiao, rede, testes, custos) esta em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md). Scripts em
-[`deploy/`](deploy/).
+## Licença
 
-## 14. Diagramas
-
-Veja [`docs/diagramas/`](docs/diagramas/) (5 diagramas Mermaid:
-arquitetura Azure, fluxo HTTP, modelo ER, processo de deploy e processo
-de testes).
-
-## 15. Seguranca
-
-- Sem autenticacao complexa (fora do escopo academico). Medida simples
-  proposta para proteger escrita na internet: ver
-  [Capitulo 12 do relatorio tecnico](docs/RELATORIO_TECNICO.md#capitulo-12--seguranca-e-limitacoes).
-- Uvicorn nunca exposto diretamente; apenas via Nginx.
-- Porta 22 (SSH) restrita ao IP do administrador via NSG.
-- Sem segredos no repositorio (`.env`, chaves e bancos reais estao no
-  `.gitignore`).
-
-## 16. Limitacoes
-
-- SQLite nao e um banco de producao para alta concorrencia/escala.
-- Sem autenticacao/autorizacao de usuarios.
-- SKU `Standard_B2ats_v2` tem recursos minimos (2 vCPU, 1 GiB RAM) — adequada
-  apenas para demonstracao academica de baixo trafego.
-- HTTPS valido requer um dominio proprio apontado para a VM (nao
-  incluso por padrao).
-
-## 17. Link publico da aplicacao
-
-`[PENDENTE — preencher com a URL publica apos o deploy na Azure ser
-validado]`
-
-## 18. Documentacao tecnica
-
-Veja a pasta [`docs/`](docs/): relatorio tecnico completo, guia Azure,
-guia de testes, guia de screenshots e roteiro de apresentacao.
-
-## 19. Manutencao
-
-- Atualizacoes de codigo na VM: `sudo ./deploy/deploy.sh` (faz backup,
-  atualiza o codigo e reinicia o servico).
-- Backup do banco: `sudo ./deploy/backup.sh` (backup consistente via
-  `sqlite3 .backup`).
-- Logs do servico: `journalctl -u api-tarefas -f`.
-
-## Licenca
-
-Este projeto esta licenciado sob a licenca MIT — veja [`LICENSE`](LICENSE).
+MIT — veja [LICENSE](LICENSE).

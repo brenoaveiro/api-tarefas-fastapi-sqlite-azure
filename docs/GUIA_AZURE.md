@@ -5,9 +5,10 @@ fonte), os passos de provisionamento manual (feitos por voce, no
 portal Azure, pois exigem sua conta e autorizacao de custos) e os
 passos automatizados pelos scripts em `deploy/`.
 
-> **Nenhum recurso Azure foi provisionado por este assistente.** Tudo
-> neste guia e **planejado**, ate que voce execute as etapas manuais e
-> confirme a criacao dos recursos.
+> **Este guia e generico e planejado.** Os valores efetivamente implantados
+> (regiao, SKU `Standard_B2ats_v2`, nomes `GS_Cloud_API...`, custos e testes) estao em
+> [`DEPLOY_AZURE_REAL.md`](DEPLOY_AZURE_REAL.md). A `Standard_B1s` citada abaixo nao esta
+> disponivel na assinatura Azure for Students usada no projeto.
 
 ---
 
@@ -104,7 +105,7 @@ regra caso seu IP mude.
   como Let's Encrypt exigem um nome de dominio, nunca emitem certificado
   para IP puro).
 - Nessa situacao, a aplicacao so pode ser demonstrada via **HTTP** no IP
-  publico (`http://<IP>/tarefas`), o que e aceitavel para fins
+  publico (`http://<IP>/incidentes`), o que e aceitavel para fins
   academicos, mas deve ser destacado como limitacao no relatorio.
 - **Se e somente se** voce possuir um dominio (ex.: comprado ou um
   subdominio gratuito como DuckDNS/No-IP apontado para o IP da VM),

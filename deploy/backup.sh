@@ -40,7 +40,7 @@ fi
 echo "==> Backup concluido com sucesso: ${BACKUP_FILE}"
 
 # Mantem apenas os 14 backups mais recentes, para nao esgotar o disco
-# da VM (que e pequeno na SKU Standard_B1s).
+# da VM (que e pequeno na SKU Standard_B2ats_v2).
 cd "$BACKUP_DIR"
 ls -1t tarefas_*.db 2>/dev/null | tail -n +15 | xargs -r rm -f --
 echo "==> Backups antigos (alem dos 14 mais recentes) removidos, se existentes."
