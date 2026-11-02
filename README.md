@@ -6,9 +6,9 @@
 
 API REST acadêmica, em Python/FastAPI com SQLite, que simula o registro de incidentes de uma central de operações de segurança (SOC). Hospedada em uma máquina virtual na Microsoft Azure.
 
-> **Documento oficial do trabalho:** [GS_CloudSec_BrenoAveiro.pdf](docs/GS_CloudSec_BrenoAveiro.pdf) (Global Solution — Cloud Security). É a explicação oficial do projeto; os demais arquivos de `docs/` são material de apoio.
+> **Documento oficial do trabalho:** [GS_CloudSec_BrenoAveiro.pdf](docs/GS_CloudSec_BrenoAveiro.pdf) (Global Solution — Cloud Security). É o relatório oficial e a única documentação da entrega; a pasta `docs/` contém apenas ele.
 
-> **Status da hospedagem:** a aplicação ficou publicada na Azure (VM Ubuntu com Nginx, HTTPS e SQLite) e foi **validada e documentada**; depois disso, **todos os recursos do Resource Group `GS_Cloud_API` foram excluídos** para encerrar qualquer custo. Por isso os endereços `https://20.80.10.214/` citados nos documentos **não respondem mais**. As evidências reais (18 capturas, logs de produção, 96 testes e CI) permanecem em [`docs/screenshots`](docs/screenshots), [`docs/evidencias`](docs/evidencias) e no relatório. O projeto continua executável localmente (veja abaixo).
+> **Status da hospedagem:** a aplicação ficou publicada na Azure (VM Ubuntu com Nginx, HTTPS e SQLite) e foi **validada e documentada**; depois disso, **todos os recursos do Resource Group `GS_Cloud_API` foram excluídos** para encerrar qualquer custo. Por isso os endereços `https://20.80.10.214/` citados nos documentos **não respondem mais**. As evidências reais (capturas, resultados dos testes e diagramas) estão no relatório oficial. O projeto continua executável localmente (veja abaixo).
 
 > **Avisos:** todos os dados são **fictícios**. Durante a hospedagem, o HTTPS usava um certificado Let's Encrypt emitido para o **endereço IP** (validade de cerca de 6 dias, renovação automática). A leitura (GET) era pública; a escrita (POST, PUT, PATCH, DELETE) era restrita por IP no Nginx, pois a API não tem autenticação de usuários.
 
@@ -39,8 +39,8 @@ Python 3.12 · FastAPI 0.162 · Starlette 1.10 · Pydantic 2.14 · SQLAlchemy 2.
 ```text
 app/            API (main, models, schemas, crud, enums) e interface (static/: dashboard, tema e Swagger UI local)
 deploy/         install.sh, deploy.sh, backup.sh, https_ip.sh, configuração do Nginx (HTTP e HTTPS) e do systemd
-docs/           relatório (Word, PDF e Markdown), guias, matriz de conformidade, auditoria, defesa oral, diagramas
-scripts/        testar_producao.sh e gerar_relatorio.py
+docs/           relatório oficial (GS_CloudSec_BrenoAveiro.pdf)
+scripts/        testar_producao.sh
 tests/          96 testes automatizados (pytest)
 .github/        workflow de integração contínua
 ```
@@ -64,7 +64,7 @@ python -m pytest -q                                                    # 96 test
 REQUIRE_HTTPS=1 ./scripts/testar_producao.sh <IP-PUBLICO> <chave-ssh>   # 58 verificações na VM
 ```
 
-A integração contínua (GitHub Actions) instala as dependências em ambiente limpo, confere os arquivos necessários e executa a suíte a cada envio. Detalhes em [`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md).
+A integração contínua (GitHub Actions) instala as dependências em ambiente limpo, confere os arquivos necessários e executa a suíte a cada envio.
 
 ## Infraestrutura Azure (valores reais)
 
@@ -78,7 +78,7 @@ A integração contínua (GitHub Actions) instala as dependências em ambiente l
 | Banco | SQLite em `/var/lib/api-tarefas/tarefas.db` (disco persistente; tabelas `incidentes` e a antiga `tarefas`) |
 | Serviços | Nginx (80 e 443) → Uvicorn (`127.0.0.1:8000`) gerenciado pelo systemd (`api-tarefas`) |
 
-O detalhamento (por que a `Standard_B1s` não foi usada, comandos, HTTPS, custos e atualização) está em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md).
+O detalhamento (SKU, comandos, HTTPS, custos e atualização) está no relatório oficial.
 
 ## Segurança
 
@@ -95,7 +95,7 @@ O detalhamento (por que a `Standard_B1s` não foi usada, comandos, HTTPS, custos
 
 ## Documentação
 
-[**Documento oficial (PDF)**](docs/GS_CloudSec_BrenoAveiro.pdf) · [Relatório técnico](docs/RELATORIO_TECNICO.md) · [Word](docs/relatorio-final.docx) · [PDF](docs/relatorio-final.pdf) · [Matriz de conformidade](docs/MATRIZ_CONFORMIDADE.md) · [Auditoria final](docs/AUDITORIA_FINAL.md) · [Defesa oral](docs/DEFESA_ORAL.md) · [Apresentação](docs/APRESENTACAO.md) · [Guia de testes](docs/GUIA_TESTES.md) · [Deploy real na Azure](docs/DEPLOY_AZURE_REAL.md) · [Guia de evidências](docs/GUIA_PRINTS.md) · [Diagramas](docs/diagramas/)
+[**Relatório oficial (PDF)**](docs/GS_CloudSec_BrenoAveiro.pdf)
 
 ## Licença
 

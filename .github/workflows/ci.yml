@@ -26,7 +26,7 @@ jobs:
                    app/main.py app/static/index.html app/static/dashboard.js app/static/dashboard.css \
                    app/static/swagger/swagger-ui-bundle.js app/static/swagger/swagger-ui.css \
                    app/static/swagger/LICENSE-swagger-ui.txt deploy/install.sh deploy/deploy.sh \
-                   scripts/testar_producao.sh docs/relatorio-final.docx docs/relatorio-final.pdf; do
+                   scripts/testar_producao.sh docs/GS_CloudSec_BrenoAveiro.pdf; do
             test -s "$f" || { echo "ARQUIVO AUSENTE OU VAZIO: $f"; exit 1; }
           done
           bash -n deploy/install.sh && bash -n deploy/deploy.sh && bash -n deploy/backup.sh \
