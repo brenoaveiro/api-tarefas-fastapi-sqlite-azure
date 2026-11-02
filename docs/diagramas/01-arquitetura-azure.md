@@ -14,11 +14,11 @@ flowchart TB
 
     subgraph Azure["Microsoft Azure — Resource Group"]
         PublicIP["Public IP Address"]
-        NSG["Network Security Group\n(controle de trafego: 22, 80, 443)"]
+        NSG["Network Security Group\n(controle de trafego: 22 so do admin, 80 publica)"]
         VNet["Virtual Network / Subnet"]
 
         subgraph VM["Azure Virtual Machine — Ubuntu Server LTS (Standard_B2ats_v2, North Central US)"]
-            Nginx["Nginx\n(proxy reverso — portas 80/443)"]
+            Nginx["Nginx\n(proxy reverso — porta 80)"]
             Uvicorn["Uvicorn + FastAPI\n(127.0.0.1:8000 — nao exposto)"]
             SQLite["SQLite\n/var/lib/api-tarefas/tarefas.db\n(Managed Disk)"]
 
@@ -31,7 +31,7 @@ flowchart TB
         VNet --- VM
     end
 
-    Usuario -->|HTTP/HTTPS| PublicIP
+    Usuario -->|HTTP porta 80| PublicIP
 
     classDef azureBox fill:#e6f2ff,stroke:#0066cc;
     classDef vmBox fill:#fff7e6,stroke:#cc8400;
@@ -40,6 +40,6 @@ flowchart TB
 ```
 
 **Observacoes:**
-- O NSG controla quais portas podem receber trafego da internet (22 restrita ao IP do administrador; 80/443 liberadas; 8000 nunca exposta publicamente).
+- O NSG controla quais portas podem receber trafego da internet (22 restrita ao IP do administrador; 80 liberada; 443 nao usada, pois nao ha dominio/HTTPS; 8000 nunca exposta publicamente).
 - O Managed Disk armazena o arquivo SQLite de forma persistente — ele nao e perdido ao reiniciar a VM, diferente do disco temporario local.
 - O Uvicorn escuta somente em `127.0.0.1`, portanto so pode ser acessado pelo Nginx na mesma maquina.
