@@ -3,11 +3,11 @@
 ```mermaid
 sequenceDiagram
     participant N as Navegador
-    participant X as Nginx (porta 80)
+    participant X as Nginx (443 TLS e 80)
     participant F as FastAPI (127.0.0.1:8000)
     participant S as SQLite
 
-    N->>X: GET / (dashboard)
+    N->>X: GET / (HTTPS, dashboard)
     X->>F: proxy_pass
     F-->>N: HTML, CSS e JS estaticos
     N->>X: GET /incidentes/estatisticas
@@ -16,7 +16,7 @@ sequenceDiagram
     S-->>F: contagens reais
     F-->>N: JSON (200)
 
-    N->>X: POST /incidentes
+    N->>X: POST /incidentes (HTTPS)
     alt IP nao autorizado
         X-->>N: 403 Forbidden
     else IP autorizado

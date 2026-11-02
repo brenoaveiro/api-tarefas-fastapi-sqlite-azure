@@ -53,6 +53,7 @@ Antes de qualquer consulta foi preciso registrar (gratuito) os provedores
 |---|---|---|---|---|
 | 100 | allow-ssh-admin | 22/TCP | IP do administrador (/32) | Permitir |
 | 110 | allow-http | 80/TCP | Qualquer | Permitir |
+| 120 | allow-https | 443/TCP | Qualquer | Permitir |
 | padrao | DenyAllInBound | todas | Qualquer | Negar |
 
 A porta 8000 (Uvicorn) **nao** e exposta: o Uvicorn escuta so em 127.0.0.1 e
@@ -101,24 +102,39 @@ Sem esse arquivo ninguem escreve. Verificado: da VM (IP nao autorizado)
 POST/PUT/DELETE -> **403**; do computador autorizado -> 201/200/204.
 Use apenas dados ficticios.
 
-## 6. HTTPS
+## 6. HTTPS (certificado Let's Encrypt para o IP publico)
 
-**Nao ha HTTPS.** Nao existe dominio proprio apontado para o IP, e nao e
-possivel emitir certificado valido (Let's Encrypt) para um IP puro. A API
-esta em **HTTP**, o que **nao e uma conexao segura** (trafego sem
-criptografia). Para HTTPS: registrar um dominio, apontar para o IP e rodar
-`sudo certbot --nginx -d seu-dominio`.
+Implementado em 2026-11-02 com `deploy/https_ip.sh`, seguindo a documentacao oficial do
+Let's Encrypt (certificados de IP e de 6 dias, disponiveis em 2026) e do Certbot:
+
+- Certbot **5.9.0** (>= 5.4) instalado em `/opt/certbot-venv`; `certonly` com `--preferred-profile shortlived`,
+  `--webroot` e `--ip-address 20.80.10.214`. Os plugins `nginx`/`apache` nao instalam certificados de IP.
+- Teste previo em **staging**; depois emissao real. Certificado: emissor Let's Encrypt (CN=YE1), SAN `IP:20.80.10.214`,
+  validade ~6 dias (2026-11-02 19:44 a 2026-11-09 11:44 UTC na emissao inicial).
+- Nginx: bloco `server` na porta 443 (`deploy/nginx/api-tarefas-https.conf`, TLS 1.2/1.3) com a **mesma politica de escrita**;
+  a porta 80 ganhou apenas o desafio ACME (`/.well-known/acme-challenge/`). NSG: regra `allow-https` (443, prioridade 120).
+- Renovacao: `certbot-renew.timer` (duas vezes ao dia, `Persistent=true`) e `renew_hook = systemctl reload nginx`.
+  Provas: `certbot renew --dry-run` aprovado e **renovacao forcada real** (numero de serie do certificado servido mudou de
+  `06A3E5...` para `06B4FC...` sem intervencao manual).
+- Verificado de fora: `curl` sem `-k` (`ssl_verify_result=0`), Chrome sem erros de console, `/docs` e `/` via HTTPS,
+  escrita via 443 bloqueada (403) para IP nao autorizado.
+- **Sem** redirecionamento HTTP->HTTPS e **sem** HSTS (decisao deliberada): o certificado dura poucos dias e a VM pode ficar
+  desalocada; o HTTP permanece como contingencia. Se a VM ficar desligada mais de 6 dias, o certificado expira e e renovado apos
+  a proxima inicializacao.
+
+Comandos: `sudo ./deploy/https_ip.sh 20.80.10.214 --staging` (teste) e `sudo ./deploy/https_ip.sh 20.80.10.214` (real).
+Rollback do HTTPS: remover `/etc/nginx/sites-enabled/api-tarefas-https.conf`, `nginx -t`, `systemctl reload nginx`;
+copia da configuracao anterior em `/var/lib/api-tarefas/backups/nginx_antes_https_*.tgz`.
 
 ## 7. Resultados dos testes (reais)
 
-Executados por `scripts/testar_producao.sh` contra `http://20.80.10.214`
-(CyberIncident API): **30 aprovados, 0 falhas** — health 200, dashboard e Swagger
-200 (sem CDN), estatisticas coerentes com a listagem, POST 201, GET 200, PUT 200,
-PATCH 200 e 422 em transicao invalida, DELETE 204, 404 em id inexistente,
-persistencia apos `systemctl restart api-tarefas`, porta 8000 sem resposta,
-POST/PUT/PATCH/DELETE de IP nao autorizado = 403 e tabela antiga `tarefas`
-preservada. Saida completa em `docs/evidencias/testes-producao.txt`.
-Testes automatizados locais: **55 aprovados** (40 da CyberIncident API + 15 do instalador).
+- Testes locais: **96 aprovados, sem avisos** (`python -m pytest -q`); CI do GitHub Actions: aprovado.
+- Producao (`REQUIRE_HTTPS=1 scripts/testar_producao.sh`): **58 verificacoes, 58 aprovadas, 0 falhas, codigo de saida 0**
+  (`docs/evidencias/testes-producao-20261102-180113.txt`): interface e Swagger, estatisticas coerentes, CRUD e transicoes,
+  422/404, persistencia apos reiniciar o servico, porta 8000 fechada, escrita de IP nao autorizado = 403 (HTTP e HTTPS),
+  permissoes do banco, certificado valido, timer e hook de renovacao, tabelas via `sqlite_master`, WAL e `integrity_check`.
+- Teste negativo (SSH invalido de proposito): 13 falhas contabilizadas e codigo de saida 1.
+- Auditoria de dependencias (`pip-audit`): nenhuma vulnerabilidade conhecida (o Starlette 0.41.3 anterior tinha 14).
 
 ## 8. Custos estimados (Linux, pay-as-you-go, ligada 24 h)
 
@@ -163,3 +179,10 @@ recurso Azure. Passos executados:
 
 Rollback: voltar ao commit `d72e3f7` (`git checkout`) e reiniciar o servico; o banco
 so e restaurado do backup (`/var/lib/api-tarefas/backups/`) se necessario.
+
+## 11. Verificacao final e rollback
+
+- Commit implantado na VM: ver `docs/AUDITORIA_FINAL.md`. Servicos `api-tarefas`, `nginx` e `certbot-renew.timer` ativos.
+- Backups: `/var/lib/api-tarefas/backups/tarefas_*.db` (integridade `ok`) e `nginx_antes_https_*.tgz`; o `.env` anterior tambem foi copiado.
+- Rollback de codigo: `git checkout <commit-anterior>` em `/opt/api-tarefas` e `systemctl restart api-tarefas`. O banco so e restaurado
+  do backup (`cp` com o servico parado) se houver corrupcao; a tabela `tarefas` nunca e apagada.

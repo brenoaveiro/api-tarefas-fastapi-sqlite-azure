@@ -1,6 +1,6 @@
 # Guia de Evidências (prints) — CyberIncident API
 
-As 18 evidências do trabalho ficam na pasta `Print_GS` (Área de Trabalho), organizadas assim:
+As 18 evidências do trabalho (as figuras 05 a 18 foram refeitas após a ativação do HTTPS e das correções finais) ficam na pasta `Print_GS` (Área de Trabalho), organizadas assim:
 
 | Pasta | Figuras |
 |---|---|
@@ -18,7 +18,7 @@ O arquivo `RELATORIO_EVIDENCIAS.md` lista, para cada figura, o que ela comprova,
 
 - **01 a 06 (Portal Azure):** capturas reais do Portal. Script `Print_GS/capturar_portal_azure.py`: abre o Chrome, aguarda o login do próprio aluno (não contorna MFA) e navega pelo menu lateral até cada tela, validando o conteúdo antes de salvar. O ID da assinatura e o IP do administrador são mascarados.
 - **07 a 13 e 17:** páginas reais abertas no Chrome (Playwright). As requisições das Figuras 09 a 13 usam o botão *Try it out* do Swagger. A faixa escura superior (URL e horário) é acrescentada na captura.
-- **14, 15, 16 e 18:** janelas reais de console (PowerShell) executando os comandos de verdade (SSH, curl e pytest); a janela é capturada. O IP do administrador aparece mascarado (`45.190.xxx.xxx`).
+- **14, 15, 16 e 18:** janelas reais de console (PowerShell) executando os comandos de verdade (SSH, curl e pytest); a janela é capturada. O IP do administrador aparece mascarado (`45.190.xxx.xxx`). A figura 16 usa `curl` via HTTPS.
 
 ## Refazer uma captura
 

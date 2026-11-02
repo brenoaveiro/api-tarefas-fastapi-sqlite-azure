@@ -1,14 +1,17 @@
 # CyberIncident API
 
+[![CI](https://github.com/brenoaveiro/api-tarefas-fastapi-sqlite-azure/actions/workflows/ci.yml/badge.svg)](https://github.com/brenoaveiro/api-tarefas-fastapi-sqlite-azure/actions/workflows/ci.yml)
+
 **Plataforma de Gerenciamento de Incidentes de Segurança Cibernética**
 
 API REST acadêmica, em Python/FastAPI com SQLite, que simula o registro de incidentes de uma central de operações de segurança (SOC). Hospedada em uma máquina virtual na Microsoft Azure.
 
-- **Aplicação (dashboard):** http://20.80.10.214/
-- **Swagger (documentação interativa):** http://20.80.10.214/docs
-- **Health check:** http://20.80.10.214/health
+- **Aplicação (dashboard):** https://20.80.10.214/
+- **Swagger (documentação interativa):** https://20.80.10.214/docs
+- **Health check:** https://20.80.10.214/health
+- Também disponível em HTTP: http://20.80.10.214/
 
-> **Aviso:** todos os dados são **fictícios**. A conexão é **HTTP (sem HTTPS)**, pois não há domínio próprio para emitir certificado. A leitura (GET) é pública; a escrita (POST, PUT, PATCH, DELETE) é restrita por IP no Nginx.
+> **Avisos:** todos os dados são **fictícios**. O HTTPS usa um certificado Let's Encrypt emitido para o **endereço IP** (validade de cerca de 6 dias, renovação automática); o HTTP continua ativo como contingência. A leitura (GET) é pública; a escrita (POST, PUT, PATCH, DELETE) é restrita por IP no Nginx, pois a API não tem autenticação de usuários.
 
 ## O que a aplicação faz
 
@@ -30,19 +33,20 @@ O status segue o fluxo `aberto → em_analise → contido/resolvido`; resolvido 
 
 ## Tecnologias
 
-Python 3 · FastAPI · Pydantic · SQLAlchemy · SQLite · Uvicorn · Nginx · systemd · HTML/CSS/JavaScript (sem frameworks) · Swagger UI (servido localmente) · Pytest · Git/GitHub · Microsoft Azure (VM Ubuntu 24.04).
+Python 3.12 · FastAPI 0.162 · Starlette 1.10 · Pydantic 2.14 · SQLAlchemy 2.0 · SQLite · Uvicorn · Nginx · systemd · Certbot (Let's Encrypt) · HTML/CSS/JavaScript sem frameworks · Swagger UI (servido localmente) · Pytest · GitHub Actions · Microsoft Azure (VM Ubuntu 24.04).
 
 ## Estrutura do projeto
 
 ```text
-app/            API (main, models, schemas, crud, enums) e interface (static/: dashboard e tema do Swagger)
-deploy/         install.sh, deploy.sh, backup.sh, configuração do Nginx e do systemd
-docs/           relatório técnico, guias, roteiro de apresentação, diagramas e evidências
+app/            API (main, models, schemas, crud, enums) e interface (static/: dashboard, tema e Swagger UI local)
+deploy/         install.sh, deploy.sh, backup.sh, https_ip.sh, configuração do Nginx (HTTP e HTTPS) e do systemd
+docs/           relatório (Word, PDF e Markdown), guias, matriz de conformidade, auditoria, defesa oral, diagramas
 scripts/        testar_producao.sh e gerar_relatorio.py
-tests/          55 testes automatizados (pytest)
+tests/          96 testes automatizados (pytest)
+.github/        workflow de integração contínua
 ```
 
-## Executar localmente
+## Executar localmente (ambiente limpo)
 
 ```bash
 python -m venv .venv
@@ -52,16 +56,16 @@ copy .env.example .env                 # Linux/macOS: cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Abra http://127.0.0.1:8000/ (dashboard) e http://127.0.0.1:8000/docs (Swagger). O banco local fica em `data/` (ignorado pelo Git). Para ver dados de exemplo, defina `SEED_DEMO_DATA=true` no `.env`.
+Abra http://127.0.0.1:8000/ (dashboard) e http://127.0.0.1:8000/docs (Swagger). O banco local fica em `data/` (ignorado pelo Git). Para ver dados de exemplo, defina `SEED_DEMO_DATA=true` no `.env`. Todos os arquivos necessários, inclusive os do Swagger UI, estão no repositório: não há download em tempo de execução.
 
 ## Testes
 
 ```bash
-python -m pytest -q                                              # 55 testes locais
-./scripts/testar_producao.sh <IP-PUBLICO> <chave-ssh>            # 30 verificações na VM
+python -m pytest -q                                                    # 96 testes locais
+REQUIRE_HTTPS=1 ./scripts/testar_producao.sh <IP-PUBLICO> <chave-ssh>   # 58 verificações na VM
 ```
 
-Detalhes em [`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md).
+A integração contínua (GitHub Actions) instala as dependências em ambiente limpo, confere os arquivos necessários e executa a suíte a cada envio. Detalhes em [`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md).
 
 ## Infraestrutura Azure (valores reais)
 
@@ -71,28 +75,29 @@ Detalhes em [`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md).
 | Resource Group | `GS_Cloud_API` |
 | Máquina virtual | `GS-Cloud-API-VM` — `Standard_B2ats_v2` (2 vCPU, 1 GiB) — Ubuntu Server 24.04 LTS |
 | Disco | `GS_Cloud_API_Disk` — Standard SSD LRS, 32 GiB (Managed Disk) |
-| Rede | `GS_Cloud_API_VNet` / `GS_Cloud_API_Subnet`, IP público Standard estático, NSG `GS_Cloud_API_NSG` |
-| Banco | SQLite em `/var/lib/api-tarefas/tarefas.db` (disco persistente) |
-| Serviços | Nginx (porta 80) → Uvicorn (`127.0.0.1:8000`) gerenciado pelo systemd (`api-tarefas`) |
+| Rede | `GS_Cloud_API_VNet` / `GS_Cloud_API_Subnet`, IP público Standard estático, NSG `GS_Cloud_API_NSG` (22 só do administrador, 80 e 443 públicas) |
+| Banco | SQLite em `/var/lib/api-tarefas/tarefas.db` (disco persistente; tabelas `incidentes` e a antiga `tarefas`) |
+| Serviços | Nginx (80 e 443) → Uvicorn (`127.0.0.1:8000`) gerenciado pelo systemd (`api-tarefas`) |
 
-O detalhamento (por que a `Standard_B1s` não foi usada, comandos, custos e atualização para a CyberIncident API) está em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md).
+O detalhamento (por que a `Standard_B1s` não foi usada, comandos, HTTPS, custos e atualização) está em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md).
 
 ## Segurança
 
-- NSG: SSH só do IP do administrador; apenas a porta 80 pública; a porta 8000 nunca é exposta.
-- Nginx: escrita só para IPs autorizados (arquivo local da VM, fora do Git); os demais recebem 403.
-- Consultas parametrizadas (ORM), `textContent` no dashboard e CSP contra XSS, sem CORS aberto, erros 500 sem detalhes.
+- NSG: SSH só do IP do administrador; apenas as portas 80 e 443 públicas; a porta 8000 nunca é exposta.
+- Nginx: escrita só para IPs autorizados (arquivo local da VM, fora do Git), nas duas portas; os demais recebem 403.
+- HTTPS com certificado Let's Encrypt para o IP, TLS 1.2/1.3 e renovação automática (timer systemd + hook de recarga do Nginx).
+- Consultas parametrizadas (ORM), `textContent` e CSP no dashboard, sem CORS aberto, erros 500 sem detalhes, dependências sem vulnerabilidades conhecidas (`pip-audit`).
 - `.env`, banco, chaves e backups não são versionados (`.gitignore`).
-- **Limitações:** sem HTTPS, sem autenticação de usuários, SQLite para baixa concorrência e VM com 1 GiB de RAM.
+- **Limitações:** sem autenticação de usuários, SQLite para baixa concorrência, VM única com 1 GiB de RAM e certificado de curta duração (ver o relatório).
 
 ## Atualização e backup
 
-`sudo /opt/api-tarefas/deploy/deploy.sh` (na VM) faz backup consistente do SQLite, **aborta se o backup falhar**, atualiza o código, a unidade systemd e reinicia o serviço. A criação da tabela `incidentes` é não destrutiva; a tabela antiga `tarefas` é preservada.
+`sudo /opt/api-tarefas/deploy/deploy.sh` (na VM) faz backup consistente do SQLite, **aborta se o backup falhar**, atualiza o código, a unidade systemd e a configuração do Nginx (com `nginx -t` e restauração automática) e reinicia o serviço. A tabela `incidentes` é criada sem apagar dados; a tabela antiga `tarefas` é preservada. O HTTPS é configurado por `sudo ./deploy/https_ip.sh <IP>`.
 
 ## Documentação
 
-[Relatório técnico](docs/RELATORIO_TECNICO.md) · [Relatório Word](docs/relatorio-final.docx) · [Relatório PDF](docs/relatorio-final.pdf) · [Guia Azure](docs/GUIA_AZURE.md) · [Guia de testes](docs/GUIA_TESTES.md) · [Guia de evidências](docs/GUIA_PRINTS.md) · [Apresentação](docs/APRESENTACAO.md) · [Diagramas](docs/diagramas/)
+[Relatório técnico](docs/RELATORIO_TECNICO.md) · [Word](docs/relatorio-final.docx) · [PDF](docs/relatorio-final.pdf) · [Matriz de conformidade](docs/MATRIZ_CONFORMIDADE.md) · [Auditoria final](docs/AUDITORIA_FINAL.md) · [Defesa oral](docs/DEFESA_ORAL.md) · [Apresentação](docs/APRESENTACAO.md) · [Guia de testes](docs/GUIA_TESTES.md) · [Deploy real na Azure](docs/DEPLOY_AZURE_REAL.md) · [Guia de evidências](docs/GUIA_PRINTS.md) · [Diagramas](docs/diagramas/)
 
 ## Licença
 
-MIT — veja [LICENSE](LICENSE).
+MIT — veja [LICENSE](LICENSE). O Swagger UI (Apache 2.0) acompanha sua licença em `app/static/swagger/`.
