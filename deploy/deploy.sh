@@ -34,6 +34,16 @@ sudo -u "$SERVICE_USER" "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requiremen
 echo "==> 4/5: Atualizando a unidade systemd e reiniciando o servico"
 install -m 644 -o root -g root "$APP_DIR/deploy/systemd/${SERVICE_NAME}.service" "/etc/systemd/system/${SERVICE_NAME}.service"
 systemctl daemon-reload
+# Sincroniza a configuracao do Nginx; se "nginx -t" falhar, restaura a anterior e aborta.
+SITE="/etc/nginx/sites-available/${SERVICE_NAME}.conf"
+cp -a "$SITE" "${SITE}.pre-deploy"
+install -m 644 -o root -g root "$APP_DIR/deploy/nginx/${SERVICE_NAME}.conf" "$SITE"
+if ! nginx -t >/dev/null 2>&1; then
+  cp -a "${SITE}.pre-deploy" "$SITE"
+  echo "ERRO: nginx -t falhou com a nova configuracao; configuracao anterior restaurada. Deploy abortado."
+  exit 1
+fi
+systemctl reload nginx
 systemctl restart "$SERVICE_NAME"
 sleep 2
 
