@@ -1,0 +1,82 @@
+CyberIncident API - verificacoes de producao em http://20.80.10.214 - 2026-11-02 21:02:59 UTC
+------------------------------------------------------------
+--- Disponibilidade e interface
+[OK]    GET /health -> 200
+[OK]    corpo do /health -> ok|ok
+[OK]    GET / (dashboard) -> 200
+[OK]    dashboard contem 'CyberIncident API' -> sim
+[OK]    GET /static/dashboard.js -> 200
+[OK]    GET /static/dashboard.css -> 200
+[OK]    GET /docs (Swagger personalizado) -> 200
+[OK]    Swagger sem CDN externo -> nao
+[OK]    GET /static/swagger/swagger-ui-bundle.js -> 200
+[OK]    GET /static/swagger/swagger-ui.css -> 200
+[OK]    GET /openapi.json -> 200
+--- Estatisticas coerentes com a listagem
+[OK]    estatisticas.total == listagem.total -> 9
+[OK]    soma por_severidade == total -> 9
+[OK]    soma por_status == total -> 9
+[OK]    soma por_categoria == total -> 9
+--- CRUD (incidente ficticio de teste)
+[OK]    POST /incidentes -> 201
+        id criado: 10
+[OK]    status inicial = aberto -> aberto
+[OK]    GET /incidentes -> 200
+[OK]    GET /incidentes?severidade=media -> 200
+[OK]    GET /incidentes/{id} -> 200
+[OK]    PUT /incidentes/{id} -> 200
+[OK]    PUT alterou a severidade -> alta
+[OK]    PATCH status aberto->em_analise -> 200
+[OK]    PATCH transicao invalida (em_analise->aberto) -> 422
+[OK]    PATCH em_analise->resolvido -> 200
+[OK]    resolvido_em preenchido -> True
+[OK]    PATCH reabertura resolvido->aberto -> 200
+[OK]    resolvido_em limpo ao reabrir -> True
+[OK]    PATCH volta a em_analise e resolvido (para o teste de persistencia) -> 200
+[OK]    POST severidade invalida -> 422
+[OK]    POST ip invalido -> 422
+[OK]    POST sem campo obrigatorio -> 422
+[OK]    GET id inexistente -> 404
+--- Persistencia: reiniciando apenas o servico api-tarefas
+[FALHA] servico ativo apos o reinicio -> esperado 'active', obtido 'azureuser@20.80.10.214: Permission denied (publickey).'
+[OK]    GET /health apos reinicio -> 200
+[OK]    incidente preservado apos reinicio (status) -> resolvido
+[OK]    DELETE /incidentes/{id} -> 204
+[OK]    GET apos DELETE -> 404
+[OK]    total de incidentes voltou ao valor inicial -> 9
+--- Seguranca
+[OK]    porta 8000 NAO exposta -> 000
+[FALHA] escrita de IP nao autorizado (HTTP) -> comando SSH falhou: Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] arquivo do banco com permissao 600 e dono apitarefas -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] Uvicorn escuta somente em 127.0.0.1:8000 -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] nada escuta em 0.0.0.0:8000 -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+--- HTTPS (certificado Let's Encrypt para o IP)
+[OK]    GET /health via HTTPS com certificado verificado -> 200 0
+[OK]    emissor do certificado e o Let's Encrypt -> sim
+[OK]    IP consta no certificado (SAN) -> sim
+[OK]    certificado ainda valido (expira em: Nov  9 11:57:27 2026 GMT) -> sim
+[OK]    GET /docs via HTTPS -> 200
+[OK]    GET /incidentes/estatisticas via HTTPS -> 200
+[FALHA] escrita de IP nao autorizado (HTTPS) -> comando SSH falhou: Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] timer de renovacao do certificado ativo -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] hook de renovacao recarrega o Nginx -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+--- Banco SQLite na VM (somente leitura)
+[FALHA] tabela 'incidentes' existe em sqlite_master -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] tabela antiga 'tarefas' preservada (sqlite_master) -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] PRAGMA journal_mode -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] PRAGMA integrity_check -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+[FALHA] nenhum incidente de teste residual -> comando SSH falhou (codigo 255): Warning: Identity file /chave/inexistente not accessible: No such file or directory.
+azureuser@20.80.10.214: Permission denied (publickey).
+------------------------------------------------------------
+Resumo: 58 verificacoes executadas | 45 aprovadas | 13 falhas | 0 nao aplicaveis

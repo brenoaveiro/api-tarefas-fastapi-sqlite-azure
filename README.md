@@ -6,11 +6,24 @@
 
 API REST acadêmica, em Python/FastAPI com SQLite, que simula o registro de incidentes de uma central de operações de segurança (SOC). Hospedada em uma máquina virtual na Microsoft Azure.
 
-> **Documento oficial do trabalho:** [GS_CloudSec_BrenoAveiro.pdf](docs/GS_CloudSec_BrenoAveiro.pdf) (Global Solution — Cloud Security). É o relatório oficial e a única documentação da entrega; a pasta `docs/` contém apenas ele.
+> **Documento oficial do trabalho:** [GS_CloudSec_BrenoAveiro.pdf](docs/GS_CloudSec_BrenoAveiro.pdf) (Global Solution — Cloud Security). É o relatório oficial; a pasta `docs/` guarda também os materiais que ele cita (diagramas, capturas de tela, evidências dos testes e o guia de implantação).
 
 > **Status da hospedagem:** a aplicação ficou publicada na Azure (VM Ubuntu com Nginx, HTTPS e SQLite) e foi **validada e documentada**; depois disso, **todos os recursos do Resource Group `GS_Cloud_API` foram excluídos** para encerrar qualquer custo. Por isso os endereços `https://20.80.10.214/` citados nos documentos **não respondem mais**. As evidências reais (capturas, resultados dos testes e diagramas) estão no relatório oficial. O projeto continua executável localmente (veja abaixo).
 
 > **Avisos:** todos os dados são **fictícios**. Durante a hospedagem, o HTTPS usava um certificado Let's Encrypt emitido para o **endereço IP** (validade de cerca de 6 dias, renovação automática). A leitura (GET) era pública; a escrita (POST, PUT, PATCH, DELETE) era restrita por IP no Nginx, pois a API não tem autenticação de usuários.
+
+## Mapa da entrega (o que foi pedido e onde encontrar)
+
+| Pedido | Atendido? | Onde ver |
+|---|---|---|
+| API básica com banco SQLite | Sim | [`app/`](app/) — FastAPI + SQLAlchemy + SQLite (`app/models.py`, `app/crud.py`, `app/main.py`) |
+| Hospedagem de ponta a ponta | Sim (encerrada após a validação) | [Relatório, seções 7 e 8](docs/GS_CloudSec_BrenoAveiro.pdf) e [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md) |
+| Link do repositório no GitHub | Sim | este repositório |
+| Prints de tela | Sim — 18 figuras | [Relatório, seção 11](docs/GS_CloudSec_BrenoAveiro.pdf) e [`docs/screenshots/`](docs/screenshots/) |
+| Explicação detalhada | Sim | [Relatório (PDF)](docs/GS_CloudSec_BrenoAveiro.pdf) |
+| Esquemas visuais | Sim — 6 diagramas | [`docs/diagramas/`](docs/diagramas/) (Mermaid, renderizado pelo GitHub) e seção 12 do relatório |
+| Elementos de nuvem (armazenamento, VM/SKU, linguagem) | Sim | [Relatório, seções 3 e 7](docs/GS_CloudSec_BrenoAveiro.pdf) e resumo abaixo |
+| Evidência dos testes | Sim | [`docs/evidencias/`](docs/evidencias/) (58 verificações em produção) e CI no GitHub Actions |
 
 ## O que a aplicação faz
 
@@ -39,7 +52,7 @@ Python 3.12 · FastAPI 0.162 · Starlette 1.10 · Pydantic 2.14 · SQLAlchemy 2.
 ```text
 app/            API (main, models, schemas, crud, enums) e interface (static/: dashboard, tema e Swagger UI local)
 deploy/         install.sh, deploy.sh, backup.sh, https_ip.sh, configuração do Nginx (HTTP e HTTPS) e do systemd
-docs/           relatório oficial (GS_CloudSec_BrenoAveiro.pdf)
+docs/           relatório oficial (PDF), diagramas/, screenshots/, evidencias/ e DEPLOY_AZURE_REAL.md
 scripts/        testar_producao.sh
 tests/          96 testes automatizados (pytest)
 .github/        workflow de integração contínua
@@ -66,6 +79,45 @@ REQUIRE_HTTPS=1 ./scripts/testar_producao.sh <IP-PUBLICO> <chave-ssh>   # 58 ver
 
 A integração contínua (GitHub Actions) instala as dependências em ambiente limpo, confere os arquivos necessários e executa a suíte a cada envio.
 
+## Elementos de nuvem em resumo
+
+- **Linguagem:** Python 3.12 (FastAPI, SQLAlchemy, Pydantic); interface em HTML, CSS e JavaScript sem frameworks.
+- **VM e SKU:** `Standard_B2ats_v2` (série B, *burstable*: 2 vCPU e 1 GiB de RAM), Ubuntu Server 24.04 LTS. A SKU define capacidade e preço; a `B1s` prevista não estava disponível na assinatura (ver `docs/DEPLOY_AZURE_REAL.md`).
+- **Armazenamento:** *Managed Disk* Standard SSD LRS de 32 GiB, que guarda o sistema, o código e o arquivo SQLite (persiste após reinícios). Não foram usados Storage Account, Blob nem banco gerenciado, pois o SQLite é um arquivo local.
+- **Rede e segurança:** VNet/sub-rede, IP público estático e NSG (22 só do administrador; 80 e 443 públicas); Nginx faz o proxy reverso e o HTTPS; a porta 8000 nunca é exposta.
+- **Custo estimado:** cerca de US$ 13/mês com a VM ligada (VM + disco + IP público).
+
+## Arquitetura
+
+```mermaid
+flowchart TB
+    Usuario["Navegador / Cliente HTTP"]
+
+    subgraph Azure["Microsoft Azure — Resource Group GS_Cloud_API (North Central US)"]
+        PIP["IP publico GS_Cloud_API_IP\nStandard, estatico"]
+        NSG["NSG GS_Cloud_API_NSG\n22: so IP do administrador | 80 e 443: publicas"]
+        VN["Rede virtual GS_Cloud_API_VNet 10.10.0.0/16
+Sub-rede GS_Cloud_API_Subnet 10.10.1.0/24"]
+        subgraph VM["VM GS-Cloud-API-VM — Ubuntu 24.04 — Standard_B2ats_v2 (2 vCPU, 1 GiB)"]
+            Nginx["Nginx :80 e :443 (TLS Let's Encrypt)
+proxy reverso + bloqueio de escrita por IP"]
+            App["Uvicorn + FastAPI
+127.0.0.1:8000 (nao exposto)"]
+            DB[("SQLite
+/var/lib/api-tarefas/tarefas.db
+tabela incidentes")]
+        end
+        Disco["Managed Disk GS_Cloud_API_Disk\nStandard SSD LRS, 32 GiB"]
+    end
+
+    Usuario -->|HTTPS 443 ou HTTP 80| PIP --> NSG --> VN --> Nginx
+    Nginx -->|proxy_pass| App
+    App -->|SQLAlchemy| DB
+    DB -.->|armazenado em| Disco
+```
+
+Demais diagramas (fluxo HTTP, modelo de dados, cadastro e status, deploy e testes) em [`docs/diagramas/`](docs/diagramas/).
+
 ## Infraestrutura Azure (valores reais)
 
 | Item | Valor |
@@ -78,7 +130,7 @@ A integração contínua (GitHub Actions) instala as dependências em ambiente l
 | Banco | SQLite em `/var/lib/api-tarefas/tarefas.db` (disco persistente; tabelas `incidentes` e a antiga `tarefas`) |
 | Serviços | Nginx (80 e 443) → Uvicorn (`127.0.0.1:8000`) gerenciado pelo systemd (`api-tarefas`) |
 
-O detalhamento (SKU, comandos, HTTPS, custos e atualização) está no relatório oficial.
+O detalhamento (SKU, comandos, HTTPS, custos e atualização) está no relatório oficial e em [`docs/DEPLOY_AZURE_REAL.md`](docs/DEPLOY_AZURE_REAL.md).
 
 ## Segurança
 
@@ -95,7 +147,8 @@ O detalhamento (SKU, comandos, HTTPS, custos e atualização) está no relatóri
 
 ## Documentação
 
-[**Relatório oficial (PDF)**](docs/GS_CloudSec_BrenoAveiro.pdf)
+- [**Relatório oficial (PDF)**](docs/GS_CloudSec_BrenoAveiro.pdf)
+- [Diagramas (Mermaid)](docs/diagramas/) · [Capturas de tela](docs/screenshots/) · [Evidências dos testes](docs/evidencias/) · [Guia de implantação](docs/DEPLOY_AZURE_REAL.md)
 
 ## Licença
 
